@@ -1,1 +1,1 @@
-
+A progression-based charm system for Cobblemon. Catch Pokémon to unlock type-specific charms that influence spawns around you, complete your Pokédex for the Shiny Charm, and combine charms into a single Multi Charm. Fully configurable.
