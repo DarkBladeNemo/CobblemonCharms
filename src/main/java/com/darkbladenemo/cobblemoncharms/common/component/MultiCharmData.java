@@ -1,0 +1,86 @@
+package com.darkbladenemo.cobblemoncharms.common.component;
+
+import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import java.util.*;
+
+public record MultiCharmData(
+        Map<CharmType, TypeEffect> typeEffects
+) {
+    public static final Codec<MultiCharmData> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    Codec.unboundedMap(
+                                    Codec.STRING.flatXmap(
+                                            str -> {
+                                                CharmType type = CharmType.fromString(str);
+                                                return type != null
+                                                        ? DataResult.success(type)
+                                                        : DataResult.error(() -> "Unknown CharmType: " + str);
+                                            },
+                                            type -> DataResult.success(type.getTranslationKey())
+                                    ),
+                                    TypeEffect.CODEC
+                            ).optionalFieldOf("type_effects", new EnumMap<>(CharmType.class))
+                            .forGetter(MultiCharmData::typeEffects)
+            ).apply(instance, data -> new MultiCharmData(new EnumMap<>(data)))
+    );
+
+    public static MultiCharmData empty() {
+        return new MultiCharmData(new EnumMap<>(CharmType.class));
+    }
+
+    public MultiCharmData addType(CharmType type, float matchMultiplier) {
+        if (typeEffects.containsKey(type)) return this;
+        Map<CharmType, TypeEffect> newEffects = new EnumMap<>(typeEffects);
+        newEffects.put(type, new TypeEffect(matchMultiplier, true));
+        return new MultiCharmData(newEffects);
+    }
+
+    public MultiCharmData toggleType(CharmType type) {
+        Map<CharmType, TypeEffect> newEffects = new EnumMap<>(typeEffects);
+        newEffects.computeIfPresent(type, (k, current) ->
+                new TypeEffect(current.matchMultiplier(), !current.enabled())
+        );
+        return new MultiCharmData(newEffects);
+    }
+
+    /**
+     * Gets all enabled type effects.
+     */
+    public Map<CharmType, TypeEffect> getEnabledEffects() {
+        // Use EnumMap for better performance with enum keys
+        Map<CharmType, TypeEffect> enabled = new EnumMap<>(CharmType.class);
+
+        typeEffects.forEach((type, effect) -> {
+            if (effect.enabled()) {
+                enabled.put(type, effect);
+            }
+        });
+
+        return enabled;
+    }
+
+    public boolean hasType(CharmType type) {
+        return typeEffects.containsKey(type);
+    }
+
+    public boolean isTypeEnabled(CharmType type) {
+        TypeEffect effect = typeEffects.get(type);
+        return effect != null && effect.enabled();
+    }
+
+    public record TypeEffect(
+            float matchMultiplier,
+            boolean enabled
+    ) {
+        public static final Codec<TypeEffect> CODEC = RecordCodecBuilder.create(instance ->
+                instance.group(
+                        Codec.FLOAT.fieldOf("match_multiplier").forGetter(TypeEffect::matchMultiplier),
+                        Codec.BOOL.fieldOf("enabled").forGetter(TypeEffect::enabled)
+                ).apply(instance, TypeEffect::new)
+        );
+    }
+}

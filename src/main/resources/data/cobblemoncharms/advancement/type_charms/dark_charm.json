@@ -1,0 +1,24 @@
+{
+  "parent": "cobblemoncharms:type_charms/fairy_charm",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:dark_charm"
+    },
+    "title": { "translate": "advancement.cobblemoncharms.type_charm.title",
+      "with": [
+        { "translate": "cobblemon.type.dark" }
+      ]},
+    "description": { "translate": "advancement.cobblemoncharms.type_charm.description",
+      "with": [
+        { "translate": "cobblemon.type.dark" }
+      ]},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "obtained": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

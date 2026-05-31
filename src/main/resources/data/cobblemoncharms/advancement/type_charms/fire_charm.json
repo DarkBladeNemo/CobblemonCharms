@@ -1,0 +1,24 @@
+{
+  "parent": "cobblemoncharms:type_charms/root_type_charm",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:fire_charm"
+    },
+    "title": { "translate": "advancement.cobblemoncharms.type_charm.title",
+      "with": [
+        { "translate": "cobblemon.type.fire" }
+      ]},
+    "description": { "translate": "advancement.cobblemoncharms.type_charm.description",
+      "with": [
+        { "translate": "cobblemon.type.fire" }
+      ]},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "obtained": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

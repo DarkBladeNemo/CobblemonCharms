@@ -1,0 +1,21 @@
+{
+  "parent": "cobblemoncharms:root",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:multi_charm"
+    },
+    "title": {
+      "translate": "advancement.cobblemoncharms.root.type.title"
+    },
+    "description": {
+      "translate": "advancement.cobblemoncharms.root.type.description"
+    },
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "tick": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

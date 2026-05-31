@@ -1,0 +1,24 @@
+{
+  "parent": "cobblemoncharms:type_charms/rock_charm",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:steel_charm"
+    },
+    "title": { "translate": "advancement.cobblemoncharms.type_charm.title",
+      "with": [
+        { "translate": "cobblemon.type.steel" }
+      ]},
+    "description": { "translate": "advancement.cobblemoncharms.type_charm.description",
+      "with": [
+        { "translate": "cobblemon.type.steel" }
+      ]},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "obtained": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

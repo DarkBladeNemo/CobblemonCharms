@@ -1,0 +1,76 @@
+package com.darkbladenemo.cobblemoncharms.compat.jei;
+
+import com.darkbladenemo.cobblemoncharms.cobblemoncharmsMod;
+import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData;
+import com.darkbladenemo.cobblemoncharms.common.config.Config;
+import com.darkbladenemo.cobblemoncharms.init.ModDataComponents;
+import com.darkbladenemo.cobblemoncharms.init.ModItems;
+import mezz.jei.api.IModPlugin;
+import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.registration.IRecipeRegistration;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.core.NonNullList;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Manually registers the MultiCharm combination recipes with JEI, since the custom
+ * recipe type has no fixed pattern and can't be auto-discovered.
+ * <p>
+ * One entry is registered per type charm: Empty MultiCharm + TypeCharm → MultiCharm with that type.
+ */
+@JeiPlugin
+public class cobblemoncharmsJeiPlugin implements IModPlugin {
+
+    private static final ResourceLocation PLUGIN_ID =
+            ResourceLocation.fromNamespaceAndPath(cobblemoncharmsMod.MOD_ID, "jei_plugin");
+
+    @Override
+    public @NotNull ResourceLocation getPluginUid() {
+        return PLUGIN_ID;
+    }
+
+    @Override
+    public void registerRecipes(IRecipeRegistration registration) {
+        List<RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>> multiCharmCombineRecipes = new ArrayList<>();
+
+        ModItems.TYPE_CHARMS.forEach((type, deferredCharm) -> {
+            ItemStack emptyMultiCharm = new ItemStack(ModItems.MULTI_CHARM.get());
+            emptyMultiCharm.set(ModDataComponents.MULTI_CHARM_DATA.get(), MultiCharmData.empty());
+
+            ItemStack result = emptyMultiCharm.copy();
+            float multiplier = Config.TYPE_CHARM_MATCH_MULTIPLIER.get().floatValue();
+            MultiCharmData resultData = MultiCharmData.empty().addType(type, multiplier);
+            result.set(ModDataComponents.MULTI_CHARM_DATA.get(), resultData);
+
+            NonNullList<Ingredient> ingredients = NonNullList.of(
+                    Ingredient.EMPTY,
+                    Ingredient.of(ModItems.MULTI_CHARM.get()),
+                    Ingredient.of(deferredCharm.get())
+            );
+
+            ShapelessRecipe recipe = new ShapelessRecipe(
+                    "cobblemoncharms_multi_charm_combine",
+                    CraftingBookCategory.MISC,
+                    result,
+                    ingredients
+            );
+
+            ResourceLocation recipeId = ResourceLocation.fromNamespaceAndPath(
+                    cobblemoncharmsMod.MOD_ID,
+                    "multi_charm_combine_" + type.getTranslationKey()
+            );
+            multiCharmCombineRecipes.add(new RecipeHolder<>(recipeId, recipe));
+        });
+
+        registration.addRecipes(RecipeTypes.CRAFTING, multiCharmCombineRecipes);
+    }
+}

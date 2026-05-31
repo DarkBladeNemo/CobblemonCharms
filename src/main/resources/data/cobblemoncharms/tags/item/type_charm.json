@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    "cobblemoncharms:bug_charm",
+    "cobblemoncharms:dark_charm",
+    "cobblemoncharms:dragon_charm",
+    "cobblemoncharms:electric_charm",
+    "cobblemoncharms:fighting_charm",
+    "cobblemoncharms:fire_charm",
+    "cobblemoncharms:flying_charm",
+    "cobblemoncharms:ghost_charm",
+    "cobblemoncharms:grass_charm",
+    "cobblemoncharms:ground_charm",
+    "cobblemoncharms:ice_charm",
+    "cobblemoncharms:normal_charm",
+    "cobblemoncharms:poison_charm",
+    "cobblemoncharms:psychic_charm",
+    "cobblemoncharms:rock_charm",
+    "cobblemoncharms:steel_charm",
+    "cobblemoncharms:water_charm",
+    "cobblemoncharms:multi_charm"
+  ]
+}

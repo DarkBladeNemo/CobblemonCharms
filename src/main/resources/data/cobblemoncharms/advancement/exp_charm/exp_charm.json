@@ -1,0 +1,25 @@
+{
+  "parent": "cobblemoncharms:exp_charm/root_exp_charm",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:exp_charm"
+    },
+    "title": {
+      "translate": "advancement.cobblemoncharms.exp_charm.title"
+    },
+    "description": {
+      "translate": "advancement.cobblemoncharms.exp_charm.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "level_up": {
+      "trigger": "cobblemon:level_up",
+      "conditions": {
+        "level": 100
+      }
+    }
+  }
+}

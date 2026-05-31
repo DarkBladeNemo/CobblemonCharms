@@ -1,0 +1,24 @@
+{
+  "parent": "cobblemoncharms:type_charms/water_charm",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:ice_charm"
+    },
+    "title": { "translate": "advancement.cobblemoncharms.type_charm.title",
+      "with": [
+        { "translate": "cobblemon.type.ice" }
+      ]},
+    "description": { "translate": "advancement.cobblemoncharms.type_charm.description",
+      "with": [
+        { "translate": "cobblemon.type.ice" }
+      ]},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "obtained": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "parent": "cobblemoncharms:dex_charm/root_dex_charm",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:shiny_charm"
+    },
+    "title": {
+      "translate": "advancement.cobblemoncharms.shiny_charm.title"
+    },
+    "description": {
+      "translate": "advancement.cobblemoncharms.shiny_charm.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "shiny_charm_obtained": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

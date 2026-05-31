@@ -1,0 +1,21 @@
+{
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:shiny_charm"
+    },
+    "title": {
+      "translate": "advancement.cobblemoncharms.root.title"
+    },
+    "description": {
+      "translate": "advancement.cobblemoncharms.root.description"
+    },
+    "background": "minecraft:textures/block/acacia_planks.png",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "tick": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

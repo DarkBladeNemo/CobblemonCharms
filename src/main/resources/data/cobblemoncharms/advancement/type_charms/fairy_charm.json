@@ -1,0 +1,24 @@
+{
+  "parent": "cobblemoncharms:type_charms/psychic_charm",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:fairy_charm"
+    },
+    "title": { "translate": "advancement.cobblemoncharms.type_charm.title",
+      "with": [
+        { "translate": "cobblemon.type.fairy" }
+      ]},
+    "description": { "translate": "advancement.cobblemoncharms.type_charm.description",
+      "with": [
+        { "translate": "cobblemon.type.fairy" }
+      ]},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "obtained": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "parent": "cobblemoncharms:dex_charm/root_dex_charm",
+  "display": {
+    "icon": {
+      "id": "cobblemoncharms:shiny_charm"
+    },
+    "title": { "translate": "advancement.cobblemoncharms.region_explorer.title",
+      "with": [
+        { "translate": "cobblemon.ui.pokedex.region.johto" }
+      ]},
+    "description": { "translate": "advancement.cobblemoncharms.region_explorer.description",
+      "with": [
+        { "translate": "cobblemon.ui.pokedex.region.johto" }
+      ]},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "johto_complete": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
