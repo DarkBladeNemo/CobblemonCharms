@@ -6,6 +6,6 @@
   "slots": [
     "shiny_charm_slot",
     "type_charm_slot",
-    "exp_charm_slot"
+    "utility_charm_slot"
   ]
 }

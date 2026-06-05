@@ -1,5 +1,5 @@
 {
-  "parent": "cobblemoncharms:exp_charm/root_exp_charm",
+  "parent": "cobblemoncharms:utility_charm/root_utility_charm",
   "display": {
     "icon": {
       "id": "cobblemoncharms:exp_charm"

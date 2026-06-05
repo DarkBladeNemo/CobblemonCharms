@@ -91,6 +91,9 @@ public class ModItems {
     public static final Supplier<Item> EXP_CHARM = ITEMS.register("exp_charm",
             ExpCharm::new);
 
+    public static final Supplier<Item> CATCH_CHARM = ITEMS.register("catch_charm",
+            CatchCharm::new);
+
     public static final Supplier<Item> MULTI_CHARM = ITEMS.register("multi_charm",
             MultiCharm::new);
 

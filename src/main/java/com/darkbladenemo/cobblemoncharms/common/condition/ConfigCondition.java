@@ -28,6 +28,7 @@ public record ConfigCondition(String key) implements ICondition {
     private static final Map<String, ModConfigSpec.BooleanValue> CONFIG_MAP = Map.ofEntries(
             Map.entry("enable_shiny_charm",     Config.ENABLE_SHINY_CHARM),
             Map.entry("enable_exp_charm",        Config.ENABLE_EXP_CHARM),
+            Map.entry("enable_catch_charm",      Config.ENABLE_CATCH_CHARM),
             Map.entry("enable_multi_charm",      Config.ENABLE_MULTI_CHARM),
             Map.entry("enable_all_type_charms",  Config.ENABLE_ALL_TYPE_CHARMS),
             Map.entry("enable_normal_charm",     Config.ENABLE_NORMAL_CHARM),

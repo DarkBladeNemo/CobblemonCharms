@@ -25,6 +25,7 @@ public class AdvancementRewardHandler {
         AdvancementHolder earned = event.getAdvancement();
 
         checkExpCharm(player, earned);
+        checkCatchCharm(player, earned);
     }
 
     private static void checkExpCharm(ServerPlayer player, AdvancementHolder earned) {
@@ -38,6 +39,19 @@ public class AdvancementRewardHandler {
 
         giveItem(player, new ItemStack(ModItems.EXP_CHARM.get()),
                 "message.cobblemoncharms.exp_charm_awarded");
+    }
+
+    private static void checkCatchCharm(ServerPlayer player, AdvancementHolder earned) {
+        if (!Config.ENABLE_CATCH_CHARM.get()) return;
+
+        AdvancementHolder catchCharmAdvancement =
+                ModAdvancement.CATCH_CHARM.getAdvancement(player.serverLevel());
+
+        if (catchCharmAdvancement == null) return;
+        if (!earned.id().equals(catchCharmAdvancement.id())) return;
+
+        giveItem(player, new ItemStack(ModItems.CATCH_CHARM.get()),
+                "message.cobblemoncharms.catch_charm_awarded");
     }
 
     private static void giveItem(ServerPlayer player, ItemStack stack, String messageKey) {

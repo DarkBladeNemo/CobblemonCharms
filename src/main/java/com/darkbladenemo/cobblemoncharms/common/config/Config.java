@@ -27,6 +27,10 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_EXP_CHARM;
     public static final ModConfigSpec.DoubleValue EXP_CHARM_MULTIPLIER;
 
+    // Catch Charm
+    public static final ModConfigSpec.BooleanValue ENABLE_CATCH_CHARM;
+    public static final ModConfigSpec.DoubleValue CATCH_CHARM_MULTIPLIER;
+
     // Multi Charm
     public static final ModConfigSpec.BooleanValue ENABLE_MULTI_CHARM;
 
@@ -157,6 +161,16 @@ public class Config {
                 .comment("Experience multiplier when EXP Charm is equipped (default: 1.5 = 50% more EXP)")
                 .defineInRange("exp_charm_multiplier", 1.5, 1.0, 10.0);
         BUILDER.pop();
+
+        BUILDER.push("Catch Charm");
+        ENABLE_CATCH_CHARM = BUILDER
+                .comment("Enable Catch Charm item")
+                .define("enable_catch_charm", true);
+        CATCH_CHARM_MULTIPLIER = BUILDER
+                .comment("Catch rate multiplier when Catch Charm is equipped (default: 2.0 = double catch rate)")
+                .defineInRange("catch_charm_multiplier", 2.0, 1.0, 10.0);
+        BUILDER.pop();
+
 
         BUILDER.push("Multi Charm");
         ENABLE_MULTI_CHARM = BUILDER

@@ -1,5 +1,6 @@
 package com.darkbladenemo.cobblemoncharms.common.event
 
+import com.darkbladenemo.cobblemoncharms.common.component.CatchCharmData
 import com.darkbladenemo.cobblemoncharms.common.component.EVItemData
 import com.darkbladenemo.cobblemoncharms.common.component.ExpCharmData
 import com.darkbladenemo.cobblemoncharms.common.component.IVItemData
@@ -17,6 +18,7 @@ object ModEvents {
     // Safe config readers — return hardcoded defaults during datagen when
     // the config file hasn't been loaded yet (Config.SPEC.isLoaded() == false).
     private fun expMultiplier()         = if (Config.SPEC.isLoaded) Config.EXP_CHARM_MULTIPLIER.get().toFloat()         else 1.5f
+    private fun catchMultiplier()       = if (Config.SPEC.isLoaded) Config.CATCH_CHARM_MULTIPLIER.get().toFloat()       else 2.0f
     private fun shinyMultiplier()       = if (Config.SPEC.isLoaded) Config.SHINY_CHARM_MULTIPLIER.get().toFloat()       else 3.0f
     private fun typeMatchMultiplier()   = if (Config.SPEC.isLoaded) Config.TYPE_CHARM_MATCH_MULTIPLIER.get().toFloat()  else 5.0f
     private fun superEvAmount()         = if (Config.SPEC.isLoaded) Config.SUPER_EV_INCREASE_AMOUNT.get()               else 100
@@ -28,6 +30,10 @@ object ModEvents {
     fun onModifyDefaultComponents(event: ModifyDefaultComponentsEvent) {
         event.modify(ModItems.EXP_CHARM.get()) { builder ->
             builder.set(ModDataComponents.EXP_CHARM_DATA.get(), ExpCharmData(expMultiplier()))
+        }
+
+        event.modify(ModItems.CATCH_CHARM.get()) { builder ->
+            builder.set(ModDataComponents.CATCH_CHARM_DATA.get(), CatchCharmData(catchMultiplier()))
         }
 
         event.modify(ModItems.SHINY_CHARM.get()) { builder ->

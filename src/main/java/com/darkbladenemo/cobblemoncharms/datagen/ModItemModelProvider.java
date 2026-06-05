@@ -32,6 +32,7 @@ public class ModItemModelProvider extends ItemModelProvider {
 
         basicItem(ModItems.SHINY_CHARM.get());
         basicItem(ModItems.EXP_CHARM.get());
+        basicItem(ModItems.CATCH_CHARM.get());
         basicItem(ModItems.MULTI_CHARM.get());
 
         for (CharmType type : CharmType.getEntries()) {

@@ -48,6 +48,7 @@ public class cobblemoncharmsMod {
         // Register events
         CharmEvents.register();
         ExpCharmEvents.register();
+        CatchCharmEvents.register();
         AdvancementRewardHandler.register();
         TypeCharmAdvancementEvents.register();
 
@@ -93,6 +94,7 @@ public class cobblemoncharmsMod {
             // Other Charms
             if (Config.ENABLE_SHINY_CHARM.get()) event.accept(ModItems.SHINY_CHARM.get());
             if (Config.ENABLE_EXP_CHARM.get()) event.accept(ModItems.EXP_CHARM.get());
+            if (Config.ENABLE_CATCH_CHARM.get()) event.accept(ModItems.CATCH_CHARM.get());
             if (Config.ENABLE_MULTI_CHARM.get()) event.accept(ModItems.MULTI_CHARM.get());
 
             // Type Charms

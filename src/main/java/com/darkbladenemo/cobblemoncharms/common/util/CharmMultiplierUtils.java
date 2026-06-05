@@ -1,6 +1,7 @@
 package com.darkbladenemo.cobblemoncharms.common.util;
 
 import com.darkbladenemo.cobblemoncharms.advancement.ModAdvancement;
+import com.darkbladenemo.cobblemoncharms.common.component.CatchCharmData;
 import com.darkbladenemo.cobblemoncharms.common.component.ExpCharmData;
 import com.darkbladenemo.cobblemoncharms.common.component.ShinyCharmData;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
@@ -35,6 +36,21 @@ public class CharmMultiplierUtils {
                 ModAdvancement.EXP_CHARM
         );
     }
+
+    public static float getCatchMultiplier(ServerPlayer player) {
+        if (!Config.ENABLE_CATCH_CHARM.get()) return 1.0f;
+        return getCharmMultiplier(
+                player,
+                "utility_charm_slot",
+                ModItems.CATCH_CHARM.get(),
+                stack -> {
+                    CatchCharmData data = stack.get(ModDataComponents.CATCH_CHARM_DATA.get());
+                    return data != null ? data.multiplier() : Config.CATCH_CHARM_MULTIPLIER.get().floatValue();
+                },
+                ModAdvancement.CATCH_CHARM
+        );
+    }
+
 
     public static float getShinyMultiplier(ServerPlayer player) {
         if (!Config.ENABLE_SHINY_CHARM.get()) return 1.0f;

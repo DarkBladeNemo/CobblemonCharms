@@ -10,9 +10,10 @@ import net.minecraft.world.item.Rarity
 import net.minecraft.world.item.TooltipFlag
 import top.theillusivec4.curios.api.type.capability.ICurioItem
 
-class ExpCharm : Item(Properties()
-    .stacksTo(1)
-    .rarity(Rarity.UNCOMMON)
+class CatchCharm : Item(
+    Properties()
+        .stacksTo(1)
+        .rarity(Rarity.UNCOMMON)
 ), ICurioItem {
 
     override fun appendHoverText(
@@ -23,22 +24,22 @@ class ExpCharm : Item(Properties()
     ) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag)
 
-        val data = stack.get(ModDataComponents.EXP_CHARM_DATA.get())
-        val multiplier = data?.multiplier() ?: Config.EXP_CHARM_MULTIPLIER.get().toFloat()
+        val data = stack.get(ModDataComponents.CATCH_CHARM_DATA.get())
+        val multiplier = data?.multiplier() ?: Config.CATCH_CHARM_MULTIPLIER.get().toFloat()
 
-        tooltipComponents.add(Component.translatable("item.cobblemoncharms.exp_charm.tooltip"))
+        tooltipComponents.add(Component.translatable("item.cobblemoncharms.catch_charm.tooltip"))
         tooltipComponents.add(
             Component.translatable(
-                "tooltip.cobblemoncharms.exp_boost",
-                String.format("§a%.0f%%", (multiplier - 1.0) * 100)
+                "tooltip.cobblemoncharms.catch_boost",
+                String.format("§a%.1f", multiplier)
             )
         )
 
         ClientTooltipUtils.appendStatusTooltip(
             tooltipComponents,
-            enabled = Config.ENABLE_EXP_CHARM.get(),
-            advancementPath = "utility_charm/exp_charm",
-            advancementLabel = "EXP Charm"
+            enabled = Config.ENABLE_CATCH_CHARM.get(),
+            advancementPath = "utility_charm/catch_charm",
+            advancementLabel = "Catch Charm"
         )
     }
 }

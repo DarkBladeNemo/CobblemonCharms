@@ -104,6 +104,20 @@ public class ModRecipeProvider extends RecipeProvider {
                 .save(withCondition(output, new ConfigCondition("enable_exp_charm")),
                         ResourceLocation.fromNamespaceAndPath(cobblemoncharmsMod.MOD_ID, "charms/exp_charm"));
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.CATCH_CHARM.get())
+                .pattern("ADA")
+                .pattern("CBE")
+                .pattern("AFA")
+                .define('A', Items.GOLD_INGOT)
+                .define('B', CobblemonItems.POKE_BALL)
+                .define('C', CobblemonItems.WATER_GEM)
+                .define('D', CobblemonItems.GROUND_GEM)
+                .define('E', CobblemonItems.FLYING_GEM)
+                .define('F', CobblemonItems.DRAGON_GEM)
+                .unlockedBy("has_poke_ball", InventoryChangeTrigger.TriggerInstance.hasItems(CobblemonItems.POKE_BALL))
+                .save(withCondition(output, new ConfigCondition("enable_catch_charm")),
+                        ResourceLocation.fromNamespaceAndPath(cobblemoncharmsMod.MOD_ID, "charms/catch_charm"));
+
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.MULTI_CHARM.get())
                 .pattern("GDG")
                 .pattern("CEA")

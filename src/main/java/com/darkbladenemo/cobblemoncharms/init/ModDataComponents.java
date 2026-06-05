@@ -19,6 +19,13 @@ public class ModDataComponents {
                             .build()
             );
 
+    public static final Supplier<DataComponentType<CatchCharmData>> CATCH_CHARM_DATA =
+            DATA_COMPONENTS.register("catch_charm_data", () ->
+                    DataComponentType.<CatchCharmData>builder()
+                            .persistent(CatchCharmData.CODEC)
+                            .build()
+            );
+
     public static final Supplier<DataComponentType<ShinyCharmData>> SHINY_CHARM_DATA =
             DATA_COMPONENTS.register("shiny_charm_data", () ->
                     DataComponentType.<ShinyCharmData>builder()
