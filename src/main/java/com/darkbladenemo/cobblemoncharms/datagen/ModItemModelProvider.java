@@ -1,43 +1,50 @@
 package com.darkbladenemo.cobblemoncharms.datagen;
 
-import com.darkbladenemo.cobblemoncharms.cobblemoncharmsMod;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
-import net.minecraft.data.PackOutput;
-import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider;
+import net.minecraft.data.models.BlockModelGenerators;
+import net.minecraft.data.models.ItemModelGenerators;
+import net.minecraft.data.models.model.ModelTemplates;
 
-public class ModItemModelProvider extends ItemModelProvider {
+public class ModItemModelProvider extends FabricModelProvider {
 
-    public ModItemModelProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
-        super(output, cobblemoncharmsMod.MOD_ID, existingFileHelper);
+    public ModItemModelProvider(FabricDataOutput output) {
+        super(output);
     }
 
     @Override
-    protected void registerModels() {
-        basicItem(ModItems.SUPER_CARBOS.get());
-        basicItem(ModItems.SUPER_PROTEIN.get());
-        basicItem(ModItems.SUPER_HP_UP.get());
-        basicItem(ModItems.SUPER_IRON.get());
-        basicItem(ModItems.SUPER_CALCIUM.get());
-        basicItem(ModItems.SUPER_ZINC.get());
+    public void generateBlockStateModels(BlockModelGenerators generators) {
+        // No block models needed
+    }
 
-        basicItem(ModItems.SUPER_HEALTH_CANDY.get());
-        basicItem(ModItems.SUPER_MIGHTY_CANDY.get());
-        basicItem(ModItems.SUPER_TOUGH_CANDY.get());
-        basicItem(ModItems.SUPER_SMART_CANDY.get());
-        basicItem(ModItems.SUPER_COURAGE_CANDY.get());
-        basicItem(ModItems.SUPER_QUICK_CANDY.get());
-        basicItem(ModItems.GOLD_BOTTLE_CAP.get());
+    @Override
+    public void generateItemModels(ItemModelGenerators generators) {
+        generators.generateFlatItem(ModItems.SUPER_CARBOS,       ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_PROTEIN,      ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_HP_UP,        ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_IRON,         ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_CALCIUM,      ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_ZINC,         ModelTemplates.FLAT_ITEM);
 
-        basicItem(ModItems.SHINY_CHARM.get());
-        basicItem(ModItems.EXP_CHARM.get());
-        basicItem(ModItems.MULTI_CHARM.get());
+        generators.generateFlatItem(ModItems.SUPER_HEALTH_CANDY,  ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_MIGHTY_CANDY,  ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_TOUGH_CANDY,   ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_SMART_CANDY,   ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_COURAGE_CANDY, ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.SUPER_QUICK_CANDY,   ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.GOLD_BOTTLE_CAP,     ModelTemplates.FLAT_ITEM);
+
+        generators.generateFlatItem(ModItems.SHINY_CHARM,   ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.EXP_CHARM,     ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.CATCH_CHARM,   ModelTemplates.FLAT_ITEM);
+        generators.generateFlatItem(ModItems.MULTI_CHARM,   ModelTemplates.FLAT_ITEM);
 
         for (CharmType type : CharmType.getEntries()) {
-            var holder = ModItems.TYPE_CHARMS.get(type);
-            if (holder != null) {
-                basicItem(holder.get());
+            var charm = ModItems.TYPE_CHARMS.get(type);
+            if (charm != null) {
+                generators.generateFlatItem(charm, ModelTemplates.FLAT_ITEM);
             }
         }
     }

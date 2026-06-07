@@ -25,15 +25,14 @@ public class MultiCharmRecipe extends CustomRecipe {
     @Override
     public boolean matches(CraftingInput input, @NotNull Level level) {
         ItemStack multiCharm = ItemStack.EMPTY;
-        ItemStack typeCharm = ItemStack.EMPTY;
+        ItemStack typeCharm  = ItemStack.EMPTY;
         int itemCount = 0;
 
         for (int i = 0; i < input.size(); i++) {
             ItemStack stack = input.getItem(i);
             if (!stack.isEmpty()) {
                 itemCount++;
-
-                if (stack.is(ModItems.MULTI_CHARM.get())) {
+                if (stack.is(ModItems.MULTI_CHARM)) {
                     if (!multiCharm.isEmpty()) return false;
                     multiCharm = stack;
                 } else if (stack.getItem() instanceof TypeCharm) {
@@ -45,52 +44,38 @@ public class MultiCharmRecipe extends CustomRecipe {
             }
         }
 
-        if (itemCount != 2 || multiCharm.isEmpty() || typeCharm.isEmpty()) {
-            return false;
-        }
+        if (itemCount != 2 || multiCharm.isEmpty() || typeCharm.isEmpty()) return false;
 
-        MultiCharmData multiData = multiCharm.get(ModDataComponents.MULTI_CHARM_DATA.get());
-        TypeCharmData typeData = typeCharm.get(ModDataComponents.TYPE_CHARM_DATA.get());
+        MultiCharmData multiData = multiCharm.get(ModDataComponents.MULTI_CHARM_DATA);
+        TypeCharmData  typeData  = typeCharm.get(ModDataComponents.TYPE_CHARM_DATA);
 
         if (multiData == null || typeData == null) return false;
-
         return !multiData.hasType(typeData.type());
     }
 
     @Override
     public @NotNull ItemStack assemble(CraftingInput input, @NotNull HolderLookup.Provider registries) {
         ItemStack multiCharm = ItemStack.EMPTY;
-        ItemStack typeCharm = ItemStack.EMPTY;
+        ItemStack typeCharm  = ItemStack.EMPTY;
 
         for (int i = 0; i < input.size(); i++) {
             ItemStack stack = input.getItem(i);
             if (!stack.isEmpty()) {
-                if (stack.is(ModItems.MULTI_CHARM.get())) {
-                    multiCharm = stack;
-                } else if (stack.getItem() instanceof TypeCharm) {
-                    typeCharm = stack;
-                }
+                if (stack.is(ModItems.MULTI_CHARM))             multiCharm = stack;
+                else if (stack.getItem() instanceof TypeCharm)  typeCharm  = stack;
             }
         }
 
-        if (multiCharm.isEmpty() || typeCharm.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
+        if (multiCharm.isEmpty() || typeCharm.isEmpty()) return ItemStack.EMPTY;
 
-        MultiCharmData multiData = multiCharm.get(ModDataComponents.MULTI_CHARM_DATA.get());
-        TypeCharmData typeData = typeCharm.get(ModDataComponents.TYPE_CHARM_DATA.get());
+        MultiCharmData multiData = multiCharm.get(ModDataComponents.MULTI_CHARM_DATA);
+        TypeCharmData  typeData  = typeCharm.get(ModDataComponents.TYPE_CHARM_DATA);
 
-        if (multiData == null || typeData == null) {
-            return ItemStack.EMPTY;
-        }
+        if (multiData == null || typeData == null) return ItemStack.EMPTY;
 
         ItemStack result = multiCharm.copy();
-        MultiCharmData newData = multiData.addType(
-                typeData.type(),
-                typeData.matchMultiplier()
-        );
-        result.set(ModDataComponents.MULTI_CHARM_DATA.get(), newData);
-
+        result.set(ModDataComponents.MULTI_CHARM_DATA,
+                multiData.addType(typeData.type(), typeData.matchMultiplier()));
         return result;
     }
 
@@ -101,7 +86,7 @@ public class MultiCharmRecipe extends CustomRecipe {
 
     @Override
     public @NotNull RecipeSerializer<?> getSerializer() {
-        return ModRecipes.MULTI_CHARM_SERIALIZER.get();
+        return ModRecipes.MULTI_CHARM_SERIALIZER;
     }
 
     public static class Serializer implements RecipeSerializer<MultiCharmRecipe> {
@@ -120,9 +105,7 @@ public class MultiCharmRecipe extends CustomRecipe {
                 );
 
         @Override
-        public @NotNull MapCodec<MultiCharmRecipe> codec() {
-            return CODEC;
-        }
+        public @NotNull MapCodec<MultiCharmRecipe> codec() { return CODEC; }
 
         @Override
         public @NotNull StreamCodec<RegistryFriendlyByteBuf, MultiCharmRecipe> streamCodec() {

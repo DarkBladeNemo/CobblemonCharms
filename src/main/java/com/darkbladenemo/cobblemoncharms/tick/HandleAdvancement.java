@@ -51,7 +51,7 @@ public class HandleAdvancement {
     }
 
     private static void giveShinyCharm(ServerPlayer player, double threshold) {
-        ItemStack charm = new ItemStack(ModItems.SHINY_CHARM.get());
+        ItemStack charm = new ItemStack(ModItems.SHINY_CHARM);
 
         if (!player.getInventory().add(charm)) {
             player.drop(charm, false);

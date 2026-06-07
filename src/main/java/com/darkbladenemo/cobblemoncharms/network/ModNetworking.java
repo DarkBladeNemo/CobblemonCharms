@@ -1,117 +1,107 @@
 package com.darkbladenemo.cobblemoncharms.network;
 
-import com.darkbladenemo.cobblemoncharms.cobblemoncharmsMod;
-import com.darkbladenemo.cobblemoncharms.client.network.ClientPacketHandlers;
 import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData;
+import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
-import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.network.payload.*;
+import dev.emi.trinkets.api.TrinketsApi;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import top.theillusivec4.curios.api.CuriosApi;
 
-@EventBusSubscriber(modid = cobblemoncharmsMod.MOD_ID)
 public class ModNetworking {
 
-    @SubscribeEvent
-    public static void register(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar("1");
-
-        registrar.playToClient(
+    /**
+     * Registers all payload types and server-side (C2S) handlers.
+     * Call from CobblemonCharmsFabric.onInitialize().
+     *
+     * Client-side S2C handlers are registered in ModNetworkingClient
+     * from the client entrypoint, since they reference client-only classes.
+     */
+    public static void registerServer() {
+        // -- Register payload types --------------------------------------------
+        // S2C
+        PayloadTypeRegistry.playS2C().register(
                 OpenMultiCharmScreenPayload.TYPE,
-                OpenMultiCharmScreenPayload.STREAM_CODEC,
-                (payload, context) -> context.enqueueWork(() ->
-                        ClientPacketHandlers.handleOpenMultiCharmScreen(payload.slotIndex(), payload.fromCurio())
-                )
-        );
-
-        registrar.playToServer(
-                ToggleMultiCharmTypePayload.TYPE,
-                ToggleMultiCharmTypePayload.STREAM_CODEC,
-                (payload, context) -> context.enqueueWork(() -> {
-                    ServerPlayer player = (ServerPlayer) context.player();
-                    ItemStack stack = getMultiCharmStack(player, payload.curioSlotIndex(), payload.fromCurio());
-
-                    if (!stack.isEmpty()) {
-                        CharmType type = CharmType.fromString(payload.typeName());
-                        if (type != null) {
-                            MultiCharmData data = stack.get(ModDataComponents.MULTI_CHARM_DATA.get());
-                            if (data != null && data.hasType(type)) {
-                                MultiCharmData newData = data.toggleType(type);
-                                stack.set(ModDataComponents.MULTI_CHARM_DATA.get(), newData);
-                                PacketDistributor.sendToPlayer(player, new RefreshMultiCharmScreenPayload(newData));
-                            }
-                        }
-                    }
-                })
-        );
-
-        registrar.playToClient(
+                OpenMultiCharmScreenPayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(
                 RefreshMultiCharmScreenPayload.TYPE,
-                RefreshMultiCharmScreenPayload.STREAM_CODEC,
-                (payload, context) -> context.enqueueWork(() ->
-                        ClientPacketHandlers.handleRefreshMultiCharmScreen(payload.data())
-                )
-        );
-
-        registrar.playToServer(
-                OpenMultiCharmFromCurioPayload.TYPE,
-                OpenMultiCharmFromCurioPayload.STREAM_CODEC,
-                (payload, context) -> context.enqueueWork(() -> {
-                    ServerPlayer player = (ServerPlayer) context.player();
-
-                    CuriosApi.getCuriosInventory(player).ifPresent(inventory -> {
-                        var slots = inventory.findCurios("type_charm_slot");
-                        int slotIndex = payload.slotIndex();
-
-                        if (slotIndex >= 0 && slotIndex < slots.size()) {
-                            ItemStack stack = slots.get(slotIndex).stack();
-                            if (stack.is(ModItems.MULTI_CHARM.get())) {
-                                PacketDistributor.sendToPlayer(player,
-                                        new OpenMultiCharmScreenPayload(slotIndex, true));
-                            }
-                        }
-                    });
-                })
-        );
-
-        registrar.playToClient(
+                RefreshMultiCharmScreenPayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(
                 SyncAdvancementsPayload.TYPE,
-                SyncAdvancementsPayload.STREAM_CODEC,
-                (payload, context) -> context.enqueueWork(() ->
-                        com.darkbladenemo.cobblemoncharms.client.util.ClientAdvancementCache.INSTANCE
-                                .update(payload.earnedIds())
-                )
-        );
+                SyncAdvancementsPayload.STREAM_CODEC);
+
+        // C2S
+        PayloadTypeRegistry.playC2S().register(
+                ToggleMultiCharmTypePayload.TYPE,
+                ToggleMultiCharmTypePayload.STREAM_CODEC);
+        PayloadTypeRegistry.playC2S().register(
+                OpenMultiCharmFromCurioPayload.TYPE,
+                OpenMultiCharmFromCurioPayload.STREAM_CODEC);
+
+        // -- C2S handlers (server receives) ------------------------------------
+        ServerPlayNetworking.registerGlobalReceiver(
+                ToggleMultiCharmTypePayload.TYPE,
+                (payload, context) -> {
+                    ServerPlayer player = context.player();
+                    context.server().execute(() -> {
+                        ItemStack stack = getMultiCharmStack(
+                                player, payload.curioSlotIndex(), payload.fromCurio());
+                        if (stack.isEmpty()) return;
+
+                        CharmType type = CharmType.fromString(payload.typeName());
+                        if (type == null) return;
+
+                        MultiCharmData data = stack.get(ModDataComponents.MULTI_CHARM_DATA);
+                        if (data == null || !data.hasType(type)) return;
+
+                        MultiCharmData newData = data.toggleType(type);
+                        stack.set(ModDataComponents.MULTI_CHARM_DATA, newData);
+                        ServerPlayNetworking.send(player,
+                                new RefreshMultiCharmScreenPayload(newData));
+                    });
+                });
+
+        ServerPlayNetworking.registerGlobalReceiver(
+                OpenMultiCharmFromCurioPayload.TYPE,
+                (payload, context) -> {
+                    ServerPlayer player = context.player();
+                    context.server().execute(() -> {
+                        TrinketsApi.getTrinketComponent(player).ifPresent(trinkets -> {
+                            var slots = trinkets.getEquipped(item ->
+                                    item.is(ModItems.MULTI_CHARM));
+                            int slotIndex = payload.slotIndex();
+                            if (slotIndex >= 0 && slotIndex < slots.size()) {
+                                ItemStack stack = slots.get(slotIndex).getB();
+                                if (stack.is(ModItems.MULTI_CHARM)) {
+                                    ServerPlayNetworking.send(player,
+                                            new OpenMultiCharmScreenPayload(slotIndex, true));
+                                }
+                            }
+                        });
+                    });
+                });
     }
 
     /**
-     * Resolves the Multi-Charm stack from either a Curios slot (keybind) or the player's hands
-     * (shift-right-click).
+     * Resolves the Multi-Charm stack from either a Trinkets slot or the player's hands.
      */
-    private static ItemStack getMultiCharmStack(ServerPlayer player, int curioSlotIndex, boolean fromCurio) {
-        if (fromCurio && curioSlotIndex >= 0) {
+    static ItemStack getMultiCharmStack(ServerPlayer player, int slotIndex, boolean fromTrinket) {
+        if (fromTrinket && slotIndex >= 0) {
             ItemStack[] result = {ItemStack.EMPTY};
-            CuriosApi.getCuriosInventory(player).ifPresent(inventory -> {
-                var slots = inventory.findCurios("type_charm_slot");
-                if (curioSlotIndex < slots.size()) {
-                    result[0] = slots.get(curioSlotIndex).stack();
+            TrinketsApi.getTrinketComponent(player).ifPresent(trinkets -> {
+                var slots = trinkets.getEquipped(item -> item.is(ModItems.MULTI_CHARM));
+                if (slotIndex < slots.size()) {
+                    result[0] = slots.get(slotIndex).getB();
                 }
             });
             return result[0];
         }
 
-        if (player.getMainHandItem().is(ModItems.MULTI_CHARM.get())) {
-            return player.getMainHandItem();
-        } else if (player.getOffhandItem().is(ModItems.MULTI_CHARM.get())) {
-            return player.getOffhandItem();
-        }
+        if (player.getMainHandItem().is(ModItems.MULTI_CHARM)) return player.getMainHandItem();
+        if (player.getOffhandItem().is(ModItems.MULTI_CHARM))  return player.getOffhandItem();
         return ItemStack.EMPTY;
     }
 }

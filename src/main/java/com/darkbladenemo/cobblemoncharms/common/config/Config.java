@@ -1,206 +1,173 @@
 package com.darkbladenemo.cobblemoncharms.common.config;
 
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import com.google.gson.*;
+import net.fabricmc.loader.api.FabricLoader;
 
+import java.io.*;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
 
 public class Config {
-    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
-    public static final ModConfigSpec SPEC;
+
+    // All registered values — used for load/save
+
+    private static final java.util.List<BooleanValue> ALL_BOOLS   = new java.util.ArrayList<>();
+    private static final java.util.List<DoubleValue>  ALL_DOUBLES = new java.util.ArrayList<>();
+    private static final java.util.List<IntValue>     ALL_INTS    = new java.util.ArrayList<>();
+
+    // Value wrappers — same API as NeoForge's BooleanValue / DoubleValue / IntValue
+
+    public static class BooleanValue {
+        private final String key;
+        private final boolean defaultValue;
+        private boolean value;
+
+        BooleanValue(String key, boolean defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+            this.value = defaultValue;
+        }
+
+        public boolean get() { return value; }
+        void set(boolean v) { this.value = v; }
+        String getKey() { return key; }
+        boolean getDefault() { return defaultValue; }
+    }
+
+    public static class DoubleValue {
+        private final String key;
+        private final double defaultValue;
+        private final double min, max;
+        private double value;
+
+        DoubleValue(String key, double defaultValue, double min, double max) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+            this.min = min;
+            this.max = max;
+            this.value = defaultValue;
+        }
+
+        public double get() { return value; }
+        public float floatValue() { return (float) value; }
+        void set(double v) { this.value = Math.max(min, Math.min(max, v)); }
+        String getKey() { return key; }
+        double getDefault() { return defaultValue; }
+    }
+
+    public static class IntValue {
+        private final String key;
+        private final int defaultValue;
+        private final int min, max;
+        private int value;
+
+        IntValue(String key, int defaultValue, int min, int max) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+            this.min = min;
+            this.max = max;
+            this.value = defaultValue;
+        }
+
+        public Integer get() { return value; }
+        void set(int v) { this.value = Math.max(min, Math.min(max, v)); }
+        String getKey() { return key; }
+        int getDefault() { return defaultValue; }
+    }
+
+    // SPEC — used by existing code to guard against config not being loaded yet
+
+    public static final Spec SPEC = new Spec();
+
+    public static class Spec {
+        private boolean loaded = false;
+        public boolean isLoaded() { return loaded; }
+        void setLoaded() { loaded = true; }
+    }
+
+    // Config values — identical names to the NeoForge version
 
     // Quick toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_ALL_EV_ITEMS;
-    public static final ModConfigSpec.BooleanValue ENABLE_ALL_IV_ITEMS;
-    public static final ModConfigSpec.BooleanValue ENABLE_ALL_TYPE_CHARMS;
+    public static final BooleanValue ENABLE_ALL_EV_ITEMS    = bool("enable_all_ev_items",    false);
+    public static final BooleanValue ENABLE_ALL_IV_ITEMS    = bool("enable_all_iv_items",    false);
+    public static final BooleanValue ENABLE_ALL_TYPE_CHARMS = bool("enable_all_type_charms", true);
 
     // Global charm settings
-    public static final ModConfigSpec.BooleanValue CHARM_EFFECT_REQUIRES_ADVANCEMENT;
+    public static final BooleanValue CHARM_EFFECT_REQUIRES_ADVANCEMENT = bool("charm_effect_requires_advancement", true);
 
     // Shiny Charm
-    public static final ModConfigSpec.BooleanValue ENABLE_SHINY_CHARM;
-    public static final ModConfigSpec.DoubleValue SHINY_CHARM_MULTIPLIER;
-    public static final ModConfigSpec.DoubleValue SHINY_CHARM_DEX_THRESHOLD;
+    public static final BooleanValue ENABLE_SHINY_CHARM       = bool("enable_shiny_charm", true);
+    public static final DoubleValue  SHINY_CHARM_MULTIPLIER    = doubleVal("shiny_charm_multiplier",    3.0,   1.0, 100.0);
+    public static final DoubleValue  SHINY_CHARM_DEX_THRESHOLD = doubleVal("shiny_charm_dex_threshold", 100.0, 1.0, 100.0);
 
     // EXP Charm
-    public static final ModConfigSpec.BooleanValue ENABLE_EXP_CHARM;
-    public static final ModConfigSpec.DoubleValue EXP_CHARM_MULTIPLIER;
+    public static final BooleanValue ENABLE_EXP_CHARM      = bool("enable_exp_charm", true);
+    public static final DoubleValue  EXP_CHARM_MULTIPLIER   = doubleVal("exp_charm_multiplier", 1.5, 1.0, 10.0);
+
+    // Catch Charm
+    public static final BooleanValue ENABLE_CATCH_CHARM      = bool("enable_catch_charm", true);
+    public static final DoubleValue  CATCH_CHARM_MULTIPLIER  = doubleVal("catch_charm_multiplier", 1.5, 1.0, 10.0);
 
     // Multi Charm
-    public static final ModConfigSpec.BooleanValue ENABLE_MULTI_CHARM;
+    public static final BooleanValue ENABLE_MULTI_CHARM = bool("enable_multi_charm", true);
 
-    // Type Charm Configuration
-    public static final ModConfigSpec.DoubleValue TYPE_CHARM_RADIUS;
-    public static final ModConfigSpec.DoubleValue TYPE_CHARM_MATCH_MULTIPLIER;
-    public static final ModConfigSpec.DoubleValue TYPE_CHARM_NON_MATCH_MULTIPLIER;
-    public static final ModConfigSpec.DoubleValue TYPE_CHARM_THRESHOLD_PERCENTAGE;
+    // Type Charm global settings
+    public static final DoubleValue TYPE_CHARM_RADIUS               = doubleVal("type_charm_radius",               64.0, 1.0,  256.0);
+    public static final DoubleValue TYPE_CHARM_MATCH_MULTIPLIER     = doubleVal("type_charm_match_multiplier",     5.0,  1.0,  100.0);
+    public static final DoubleValue TYPE_CHARM_NON_MATCH_MULTIPLIER = doubleVal("type_charm_non_match_multiplier", 0.5,  0.0,  1.0);
+    public static final DoubleValue TYPE_CHARM_THRESHOLD_PERCENTAGE = doubleVal("type_charm_threshold_percentage", 80.0, 0.1,  100.0);
 
     // Individual type charm toggles
-    private static final Map<CharmType, ModConfigSpec.BooleanValue> TYPE_CHARM_CONFIG_MAP =
-            new EnumMap<>(CharmType.class);
-    public static final ModConfigSpec.BooleanValue ENABLE_BUG_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_DARK_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_DRAGON_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_ELECTRIC_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_FAIRY_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_FIGHTING_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_FIRE_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_FLYING_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_GHOST_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_GRASS_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_GROUND_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_ICE_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_NORMAL_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_POISON_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_PSYCHIC_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_ROCK_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_STEEL_CHARM;
-    public static final ModConfigSpec.BooleanValue ENABLE_WATER_CHARM;
+    public static final BooleanValue ENABLE_BUG_CHARM      = bool("enable_bug_charm",      true);
+    public static final BooleanValue ENABLE_DARK_CHARM     = bool("enable_dark_charm",     true);
+    public static final BooleanValue ENABLE_DRAGON_CHARM   = bool("enable_dragon_charm",   true);
+    public static final BooleanValue ENABLE_ELECTRIC_CHARM = bool("enable_electric_charm", true);
+    public static final BooleanValue ENABLE_FAIRY_CHARM    = bool("enable_fairy_charm",    true);
+    public static final BooleanValue ENABLE_FIGHTING_CHARM = bool("enable_fighting_charm", true);
+    public static final BooleanValue ENABLE_FIRE_CHARM     = bool("enable_fire_charm",     true);
+    public static final BooleanValue ENABLE_FLYING_CHARM   = bool("enable_flying_charm",   true);
+    public static final BooleanValue ENABLE_GHOST_CHARM    = bool("enable_ghost_charm",    true);
+    public static final BooleanValue ENABLE_GRASS_CHARM    = bool("enable_grass_charm",    true);
+    public static final BooleanValue ENABLE_GROUND_CHARM   = bool("enable_ground_charm",   true);
+    public static final BooleanValue ENABLE_ICE_CHARM      = bool("enable_ice_charm",      true);
+    public static final BooleanValue ENABLE_NORMAL_CHARM   = bool("enable_normal_charm",   true);
+    public static final BooleanValue ENABLE_POISON_CHARM   = bool("enable_poison_charm",   true);
+    public static final BooleanValue ENABLE_PSYCHIC_CHARM  = bool("enable_psychic_charm",  true);
+    public static final BooleanValue ENABLE_ROCK_CHARM     = bool("enable_rock_charm",     true);
+    public static final BooleanValue ENABLE_STEEL_CHARM    = bool("enable_steel_charm",    true);
+    public static final BooleanValue ENABLE_WATER_CHARM    = bool("enable_water_charm",    true);
 
-    // EV and IV increase amounts
-    public static final ModConfigSpec.IntValue SUPER_EV_INCREASE_AMOUNT;
-    public static final ModConfigSpec.IntValue SUPER_IV_INCREASE_AMOUNT;
-    public static final ModConfigSpec.IntValue GOLD_BOTTLE_CAP_IV_AMOUNT;
+    // EV amounts
+    public static final IntValue SUPER_EV_INCREASE_AMOUNT = intVal("super_ev_increase_amount", 100, 1, 252);
 
     // Individual EV item toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_CARBOS;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_PROTEIN;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_HP_UP;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_IRON;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_CALCIUM;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_ZINC;
+    public static final BooleanValue ENABLE_SUPER_CARBOS  = bool("enable_super_carbos",  true);
+    public static final BooleanValue ENABLE_SUPER_PROTEIN = bool("enable_super_protein", true);
+    public static final BooleanValue ENABLE_SUPER_HP_UP   = bool("enable_super_hp_up",   true);
+    public static final BooleanValue ENABLE_SUPER_IRON    = bool("enable_super_iron",    true);
+    public static final BooleanValue ENABLE_SUPER_CALCIUM = bool("enable_super_calcium", true);
+    public static final BooleanValue ENABLE_SUPER_ZINC    = bool("enable_super_zinc",    true);
+
+    // IV amounts
+    public static final IntValue SUPER_IV_INCREASE_AMOUNT = intVal("super_iv_increase_amount", 10, 1,  31);
+    public static final IntValue GOLD_BOTTLE_CAP_IV_AMOUNT = intVal("gold_bottle_cap_iv_amount", 31, 1, 31);
 
     // Individual IV item toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_GOLD_BOTTLE_CAP;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_HEALTH_CANDY;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_MIGHTY_CANDY;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_TOUGH_CANDY;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_SMART_CANDY;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_COURAGE_CANDY;
-    public static final ModConfigSpec.BooleanValue ENABLE_SUPER_QUICK_CANDY;
+    public static final BooleanValue ENABLE_SUPER_HEALTH_CANDY  = bool("enable_super_health_candy",  true);
+    public static final BooleanValue ENABLE_SUPER_MIGHTY_CANDY  = bool("enable_super_mighty_candy",  true);
+    public static final BooleanValue ENABLE_SUPER_TOUGH_CANDY   = bool("enable_super_tough_candy",   true);
+    public static final BooleanValue ENABLE_SUPER_SMART_CANDY   = bool("enable_super_smart_candy",   true);
+    public static final BooleanValue ENABLE_SUPER_COURAGE_CANDY = bool("enable_super_courage_candy", true);
+    public static final BooleanValue ENABLE_SUPER_QUICK_CANDY   = bool("enable_super_quick_candy",   true);
+    public static final BooleanValue ENABLE_GOLD_BOTTLE_CAP     = bool("enable_gold_bottle_cap",     true);
+
+    // Type charm lookup map — same as NeoForge version
+
+    private static final Map<CharmType, BooleanValue> TYPE_CHARM_CONFIG_MAP = new EnumMap<>(CharmType.class);
 
     static {
-        BUILDER.push("Quick Toggles");
-        ENABLE_ALL_EV_ITEMS = BUILDER
-                .comment("Master toggle for all EV items (overrides individual enables)")
-                .define("enable_all_ev_items", false);
-        ENABLE_ALL_IV_ITEMS = BUILDER
-                .comment("Master toggle for all IV items (overrides individual enables)")
-                .define("enable_all_iv_items", false);
-        ENABLE_ALL_TYPE_CHARMS = BUILDER
-                .comment("Master toggle for all type charms (overrides individual enables)")
-                .define("enable_all_type_charms", true);
-        BUILDER.pop();
-
-        BUILDER.push("Training Items");
-
-        BUILDER.push("EV Items");
-        SUPER_EV_INCREASE_AMOUNT = BUILDER
-                .comment("Amount of EVs added by super EV items (default: 100, range: 1-252)")
-                .defineInRange("super_ev_increase_amount", 100, 1, 252);
-        ENABLE_SUPER_CARBOS  = BUILDER.define("enable_super_carbos", true);
-        ENABLE_SUPER_PROTEIN = BUILDER.define("enable_super_protein", true);
-        ENABLE_SUPER_HP_UP   = BUILDER.define("enable_super_hp_up", true);
-        ENABLE_SUPER_IRON    = BUILDER.define("enable_super_iron", true);
-        ENABLE_SUPER_CALCIUM = BUILDER.define("enable_super_calcium", true);
-        ENABLE_SUPER_ZINC    = BUILDER.define("enable_super_zinc", true);
-        BUILDER.pop();
-
-        BUILDER.push("IV Items");
-        SUPER_IV_INCREASE_AMOUNT = BUILDER
-                .comment("Amount of IVs added by super IV candies (default: 10, range: 1-31)")
-                .defineInRange("super_iv_increase_amount", 10, 1, 31);
-        GOLD_BOTTLE_CAP_IV_AMOUNT = BUILDER
-                .comment("Amount of IVs added by Gold Bottle Cap to ALL stats")
-                .comment("Default: 31 (instantly max out all IVs)")
-                .defineInRange("gold_bottle_cap_iv_amount", 31, 1, 31);
-        ENABLE_SUPER_HEALTH_CANDY  = BUILDER.define("enable_super_health_candy", true);
-        ENABLE_SUPER_MIGHTY_CANDY  = BUILDER.define("enable_super_mighty_candy", true);
-        ENABLE_SUPER_TOUGH_CANDY   = BUILDER.define("enable_super_tough_candy", true);
-        ENABLE_SUPER_SMART_CANDY   = BUILDER.define("enable_super_smart_candy", true);
-        ENABLE_SUPER_COURAGE_CANDY = BUILDER.define("enable_super_courage_candy", true);
-        ENABLE_SUPER_QUICK_CANDY   = BUILDER.define("enable_super_quick_candy", true);
-        ENABLE_GOLD_BOTTLE_CAP = BUILDER
-                .comment("Enable Gold Bottle Cap (increases all IVs)")
-                .define("enable_gold_bottle_cap", true);
-        BUILDER.pop();
-
-        BUILDER.pop();
-
-        BUILDER.push("Charms");
-        CHARM_EFFECT_REQUIRES_ADVANCEMENT = BUILDER
-                .comment("If true, charms have no effect until the player earns the corresponding advancement")
-                .define("charm_effect_requires_advancement", true);
-
-        BUILDER.push("Shiny Charm");
-        ENABLE_SHINY_CHARM = BUILDER
-                .comment("Enable Shiny Charm item")
-                .define("enable_shiny_charm", true);
-        SHINY_CHARM_MULTIPLIER = BUILDER
-                .comment("Shiny Charm multiplier (default: 3.0 = 3x better shiny odds)")
-                .comment("Cobblemon base rate: 1 in 8192")
-                .comment("With 3.0 multiplier: 1 in 2730")
-                .defineInRange("shiny_charm_multiplier", 3.0, 1.0, 100.0);
-        SHINY_CHARM_DEX_THRESHOLD = BUILDER
-                .comment("Percentage of the national Pokédex that must be caught to receive the Shiny Charm")
-                .comment("Default: 100.0 (full national dex completion)")
-                .comment("Example: 50.0 means the charm is given at 50% completion")
-                .defineInRange("shiny_charm_dex_threshold", 100.0, 1.0, 100.0);
-        BUILDER.pop();
-
-        BUILDER.push("EXP Charm");
-        ENABLE_EXP_CHARM = BUILDER
-                .comment("Enable EXP Charm item")
-                .define("enable_exp_charm", true);
-        EXP_CHARM_MULTIPLIER = BUILDER
-                .comment("Experience multiplier when EXP Charm is equipped (default: 1.5 = 50% more EXP)")
-                .defineInRange("exp_charm_multiplier", 1.5, 1.0, 10.0);
-        BUILDER.pop();
-
-        BUILDER.push("Multi Charm");
-        ENABLE_MULTI_CHARM = BUILDER
-                .comment("Enable Multi Charm item (can combine multiple type charms)")
-                .define("enable_multi_charm", true);
-        BUILDER.pop();
-
-        BUILDER.push("Type Charms");
-        TYPE_CHARM_RADIUS = BUILDER
-                .comment("Radius in blocks where type charms affect spawns (default: 64.0)")
-                .defineInRange("type_charm_radius", 64.0, 1.0, 256.0);
-        TYPE_CHARM_MATCH_MULTIPLIER = BUILDER
-                .comment("Weight multiplier for Pokémon that match the charm type (default: 5.0)")
-                .defineInRange("type_charm_match_multiplier", 5.0, 1.0, 100.0);
-        TYPE_CHARM_NON_MATCH_MULTIPLIER = BUILDER
-                .comment("Weight multiplier for Pokémon that don't match the charm type (default: 0.5)")
-                .comment("Set to 1.0 to disable the penalty")
-                .defineInRange("type_charm_non_match_multiplier", 0.5, 0.0, 1.0);
-        TYPE_CHARM_THRESHOLD_PERCENTAGE = BUILDER
-                .comment("Percentage of implemented species of a type that must be caught to receive that Type Charm")
-                .comment("Calculated against currently implemented species, so it scales automatically as Cobblemon adds more")
-                .comment("Evolutions count separately (Charmander, Charmeleon, Charizard = 3 Fire entries, 1 Flying entry)")
-                .comment("Example: 10.0 means ~10 Fire (105 implemented), ~18 Water (182 implemented), ~7 Ice (70 implemented)")
-                .defineInRange("type_charm_threshold_percentage", 80.0, 0.1, 100.0);
-
-        ENABLE_BUG_CHARM      = BUILDER.define("enable_bug_charm", true);
-        ENABLE_DARK_CHARM     = BUILDER.define("enable_dark_charm", true);
-        ENABLE_DRAGON_CHARM   = BUILDER.define("enable_dragon_charm", true);
-        ENABLE_ELECTRIC_CHARM = BUILDER.define("enable_electric_charm", true);
-        ENABLE_FAIRY_CHARM    = BUILDER.define("enable_fairy_charm", true);
-        ENABLE_FIGHTING_CHARM = BUILDER.define("enable_fighting_charm", true);
-        ENABLE_FIRE_CHARM     = BUILDER.define("enable_fire_charm", true);
-        ENABLE_FLYING_CHARM   = BUILDER.define("enable_flying_charm", true);
-        ENABLE_GHOST_CHARM    = BUILDER.define("enable_ghost_charm", true);
-        ENABLE_GRASS_CHARM    = BUILDER.define("enable_grass_charm", true);
-        ENABLE_GROUND_CHARM   = BUILDER.define("enable_ground_charm", true);
-        ENABLE_ICE_CHARM      = BUILDER.define("enable_ice_charm", true);
-        ENABLE_NORMAL_CHARM   = BUILDER.define("enable_normal_charm", true);
-        ENABLE_POISON_CHARM   = BUILDER.define("enable_poison_charm", true);
-        ENABLE_PSYCHIC_CHARM  = BUILDER.define("enable_psychic_charm", true);
-        ENABLE_ROCK_CHARM     = BUILDER.define("enable_rock_charm", true);
-        ENABLE_STEEL_CHARM    = BUILDER.define("enable_steel_charm", true);
-        ENABLE_WATER_CHARM    = BUILDER.define("enable_water_charm", true);
-
         TYPE_CHARM_CONFIG_MAP.put(CharmType.NORMAL,   ENABLE_NORMAL_CHARM);
         TYPE_CHARM_CONFIG_MAP.put(CharmType.FIRE,     ENABLE_FIRE_CHARM);
         TYPE_CHARM_CONFIG_MAP.put(CharmType.WATER,    ENABLE_WATER_CHARM);
@@ -219,19 +186,83 @@ public class Config {
         TYPE_CHARM_CONFIG_MAP.put(CharmType.DARK,     ENABLE_DARK_CHARM);
         TYPE_CHARM_CONFIG_MAP.put(CharmType.STEEL,    ENABLE_STEEL_CHARM);
         TYPE_CHARM_CONFIG_MAP.put(CharmType.FAIRY,    ENABLE_FAIRY_CHARM);
-
-        BUILDER.pop(); // Type Charms
-        BUILDER.pop(); // Charms
-
-        SPEC = BUILDER.build();
     }
 
-    /**
-     * Returns true if both the global type charm master toggle and the per-type toggle are enabled.
-     */
     public static boolean isTypeCharmEnabled(CharmType type) {
         if (!ENABLE_ALL_TYPE_CHARMS.get()) return false;
-        ModConfigSpec.BooleanValue value = TYPE_CHARM_CONFIG_MAP.get(type);
+        BooleanValue value = TYPE_CHARM_CONFIG_MAP.get(type);
         return value == null || value.get();
+    }
+
+    // Init — call from CobblemonCharmsFabric.onInitialize()
+
+    public static void init() {
+        Path configPath = FabricLoader.getInstance().getConfigDir().resolve("cobblemoncharms.json");
+        load(configPath);
+        save(configPath); // write back to create file / fill in missing keys
+        SPEC.setLoaded();
+    }
+
+    // Load / save
+
+    private static void load(Path path) {
+        File file = path.toFile();
+        if (!file.exists()) return;
+
+        try (Reader reader = new FileReader(file)) {
+            JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+
+            for (BooleanValue v : ALL_BOOLS) {
+                if (root.has(v.getKey())) {
+                    v.set(root.get(v.getKey()).getAsBoolean());
+                }
+            }
+            for (DoubleValue v : ALL_DOUBLES) {
+                if (root.has(v.getKey())) {
+                    v.set(root.get(v.getKey()).getAsDouble());
+                }
+            }
+            for (IntValue v : ALL_INTS) {
+                if (root.has(v.getKey())) {
+                    v.set(root.get(v.getKey()).getAsInt());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[CobblemonCharms] Failed to load config: " + e.getMessage());
+        }
+    }
+
+    private static void save(Path path) {
+        JsonObject root = new JsonObject();
+
+        for (BooleanValue v : ALL_BOOLS)   root.addProperty(v.getKey(), v.get());
+        for (DoubleValue  v : ALL_DOUBLES)  root.addProperty(v.getKey(), v.get());
+        for (IntValue     v : ALL_INTS)     root.addProperty(v.getKey(), v.get());
+
+        try (Writer writer = new FileWriter(path.toFile())) {
+            new GsonBuilder().setPrettyPrinting().create().toJson(root, writer);
+        } catch (Exception e) {
+            System.err.println("[CobblemonCharms] Failed to save config: " + e.getMessage());
+        }
+    }
+
+    // Factory helpers — register and return value wrappers
+
+    private static BooleanValue bool(String key, boolean def) {
+        BooleanValue v = new BooleanValue(key, def);
+        ALL_BOOLS.add(v);
+        return v;
+    }
+
+    private static DoubleValue doubleVal(String key, double def, double min, double max) {
+        DoubleValue v = new DoubleValue(key, def, min, max);
+        ALL_DOUBLES.add(v);
+        return v;
+    }
+
+    private static IntValue intVal(String key, int def, int min, int max) {
+        IntValue v = new IntValue(key, def, min, max);
+        ALL_INTS.add(v);
+        return v;
     }
 }

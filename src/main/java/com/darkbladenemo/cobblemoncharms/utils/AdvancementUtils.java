@@ -1,5 +1,6 @@
 package com.darkbladenemo.cobblemoncharms.utils;
 
+import com.darkbladenemo.cobblemoncharms.common.event.AdvancementSyncEvents;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.server.level.ServerPlayer;
@@ -8,10 +9,9 @@ public class AdvancementUtils {
 
     /**
      * Grants all criteria for an advancement if it hasn't been completed yet.
+     * Also triggers a client sync so tooltip state updates immediately.
      *
-     * @param player      The player to award the advancement to.
-     * @param advancement The advancement to award. No-op if null.
-     * @return {@code true} if the advancement was newly granted, {@code false} if it was already completed.
+     * @return {@code true} if the advancement was newly granted.
      */
     public static boolean grantAdvancement(ServerPlayer player, AdvancementHolder advancement) {
         if (advancement == null) return false;
@@ -22,6 +22,9 @@ public class AdvancementUtils {
         for (String criterion : progress.getRemainingCriteria()) {
             player.getAdvancements().award(advancement, criterion);
         }
+
+        AdvancementSyncEvents.sendSnapshot(player);
+
         return true;
     }
 }

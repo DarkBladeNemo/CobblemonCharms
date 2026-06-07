@@ -13,13 +13,12 @@ import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.common.tracking.TypeCharmProgressTracker;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.utils.AdvancementUtils;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import kotlin.Unit;
 
 import java.util.ArrayList;
@@ -32,30 +31,35 @@ import java.util.List;
  */
 public class TypeCharmAdvancementEvents {
 
+    private static MinecraftServer currentServer = null;
+
     public static void register() {
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(
+                server -> currentServer = server
+        );
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPED.register(
+                server -> currentServer = null
+        );
+
         CobblemonEvents.POKEDEX_DATA_CHANGED_POST.subscribe(Priority.NORMAL, event -> {
             handlePokedexChanged(event);
             return Unit.INSTANCE;
         });
 
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent e) -> {
-            if (e.getEntity() instanceof ServerPlayer player) {
-                checkAllTypeCharmsForPlayer(player);
-            }
-        });
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
+                checkAllTypeCharmsForPlayer(handler.player)
+        );
 
-        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent e) -> {
-            if (e.getEntity() instanceof ServerPlayer player) {
-                TypeCharmProgressTracker.invalidate(player.getUUID());
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            if (handler.player != null) {
+                TypeCharmProgressTracker.invalidate(handler.player.getUUID());
             }
         });
     }
 
     private static void checkAllTypeCharmsForPlayer(ServerPlayer player) {
         if (!Config.ENABLE_ALL_TYPE_CHARMS.get()) return;
-
-        var server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null) return;
+        if (currentServer == null) return;
 
         double threshold = Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get();
 
@@ -66,20 +70,14 @@ public class TypeCharmAdvancementEvents {
             int current  = TypeCharmProgressTracker.getUniqueCount(player, type);
             if (current < required) continue;
 
-            AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(server, type);
+            AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(currentServer, type);
             if (advancement == null) continue;
 
-            // grantAdvancement returns false if already done — safe to call every login
             boolean granted = AdvancementUtils.grantAdvancement(player, advancement);
             if (!granted) continue;
 
-            var charmHolder = ModItems.TYPE_CHARMS.get(type);
-            if (charmHolder == null) continue;
-
-            ItemStack charm = new ItemStack(charmHolder.get());
-            if (!player.getInventory().add(charm)) {
-                player.drop(charm, false);
-            }
+            ItemStack charm = new ItemStack(ModItems.TYPE_CHARMS.get(type));
+            if (!player.getInventory().add(charm)) player.drop(charm, false);
 
             player.sendSystemMessage(Component.translatable(
                     "message.cobblemoncharms.type_charm_awarded",
@@ -90,11 +88,9 @@ public class TypeCharmAdvancementEvents {
 
     private static void handlePokedexChanged(PokedexDataChangedEvent.Post event) {
         if (event.getKnowledge() != PokedexEntryProgress.CAUGHT) return;
+        if (currentServer == null) return;
 
-        var server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null) return;
-
-        ServerPlayer player = server.getPlayerList().getPlayer(event.getPlayerUUID());
+        ServerPlayer player = currentServer.getPlayerList().getPlayer(event.getPlayerUUID());
         if (player == null) return;
 
         if (!Config.ENABLE_ALL_TYPE_CHARMS.get()) return;
@@ -111,29 +107,22 @@ public class TypeCharmAdvancementEvents {
             if (!Config.isTypeCharmEnabled(type)) continue;
 
             int required = TypeCharmProgressTracker.computeThreshold(type, threshold);
-            int current = TypeCharmProgressTracker.getUniqueCount(player, type);
+            int current  = TypeCharmProgressTracker.getUniqueCount(player, type);
             if (current < required) continue;
 
-            AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(server, type);
+            AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(currentServer, type);
             if (advancement == null) continue;
 
             boolean granted = AdvancementUtils.grantAdvancement(player, advancement);
             if (!granted) continue;
 
-            var charmHolder = ModItems.TYPE_CHARMS.get(type);
-            if (charmHolder == null) continue;
+            ItemStack charm = new ItemStack(ModItems.TYPE_CHARMS.get(type));
+            if (!player.getInventory().add(charm)) player.drop(charm, false);
 
-            ItemStack charm = new ItemStack(charmHolder.get());
-            if (!player.getInventory().add(charm)) {
-                player.drop(charm, false);
-            }
-
-            player.sendSystemMessage(
-                    Component.translatable(
-                            "message.cobblemoncharms.type_charm_awarded",
-                            Component.translatable("cobblemon.type." + type.getTranslationKey())
-                    )
-            );
+            player.sendSystemMessage(Component.translatable(
+                    "message.cobblemoncharms.type_charm_awarded",
+                    Component.translatable("cobblemon.type." + type.getTranslationKey())
+            ));
         }
     }
 

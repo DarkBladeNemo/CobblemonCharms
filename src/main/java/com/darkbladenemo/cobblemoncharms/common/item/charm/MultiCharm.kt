@@ -5,6 +5,9 @@ import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.common.config.Config
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.network.payload.OpenMultiCharmScreenPayload
+import dev.emi.trinkets.api.TrinketItem
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
@@ -17,21 +20,17 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Rarity
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
-import net.neoforged.neoforge.network.PacketDistributor
-import top.theillusivec4.curios.api.type.capability.ICurioItem
 
-class MultiCharm : Item(
-    Properties()
-        .stacksTo(1)
-        .rarity(Rarity.RARE)
-), ICurioItem {
+class MultiCharm(
+    properties: Item.Properties = Item.Properties().stacksTo(1).rarity(Rarity.RARE)
+) : TrinketItem(properties) {
 
     override fun use(level: Level, player: Player, usedHand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(usedHand)
 
         if (player.isShiftKeyDown && !level.isClientSide) {
             if (player is ServerPlayer) {
-                PacketDistributor.sendToPlayer(player, OpenMultiCharmScreenPayload())
+                ServerPlayNetworking.send(player, OpenMultiCharmScreenPayload())
             }
             return InteractionResultHolder.success(stack)
         }
@@ -41,13 +40,13 @@ class MultiCharm : Item(
 
     override fun appendHoverText(
         stack: ItemStack,
-        context: TooltipContext,
+        context: Item.TooltipContext,
         tooltipComponents: MutableList<Component>,
         tooltipFlag: TooltipFlag
     ) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag)
 
-        val data = stack.get(ModDataComponents.MULTI_CHARM_DATA.get()) ?: MultiCharmData.empty()
+        val data = stack.get(ModDataComponents.MULTI_CHARM_DATA) ?: MultiCharmData.empty()
 
         tooltipComponents.add(
             Component.translatable("item.cobblemoncharms.multi_charm.tooltip")
@@ -80,7 +79,8 @@ class MultiCharm : Item(
                     val statusComponent = when {
                         !typeEnabled -> Component.translatable("item.cobblemoncharms.status.disabled")
                             .withStyle(ChatFormatting.RED)
-                        !hasAdv -> Component.translatable("item.cobblemoncharms.status.needs_advancement").withStyle(ChatFormatting.YELLOW)
+                        !hasAdv -> Component.translatable("item.cobblemoncharms.status.needs_advancement")
+                            .withStyle(ChatFormatting.YELLOW)
                         !effect.enabled() -> Component.translatable("item.cobblemoncharms.status.disabled")
                             .withStyle(ChatFormatting.RED)
                         else -> Component.translatable("item.cobblemoncharms.status.enabled")
@@ -95,7 +95,6 @@ class MultiCharm : Item(
                     )
                 }
             } else {
-                // Count types that are actually active (enabled, config on, advancement earned)
                 val activeCount = data.typeEffects().entries.count { (type, effect) ->
                     effect.enabled() &&
                             ClientTooltipUtils.isTypeCharmEnabled(type) &&

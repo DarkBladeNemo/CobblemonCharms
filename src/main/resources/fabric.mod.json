@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "license": "${mod_license}",
+  "environment": "*",
+
+  "entrypoints": {
+    "main": [
+      "com.darkbladenemo.cobblemoncharms.CobblemonCharmsFabric"
+    ],
+    "client": [
+      "com.darkbladenemo.cobblemoncharms.client.CobblemonCharmsClientFabric"
+    ],
+    "fabric-datagen": [
+      "com.darkbladenemo.cobblemoncharms.datagen.CobblemonCharmsDatagen"
+    ],
+    "jei_mod_plugin": [
+      "com.darkbladenemo.cobblemoncharms.compat.jei.CobblemonCharmsJeiPlugin"
+    ]
+  },
+
+  "mixins": [],
+
+  "depends": {
+    "minecraft": "~1.21.1",
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "fabric-language-kotlin": ">=${kotlin_fabric_version}",
+    "cobblemon": ">=${cobblemon_version}",
+    "trinkets": "*"
+  },
+
+  "suggests": {
+    "jei": "*"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "entities": [
+    "player"
+  ],
+  "slots": [
+    "charm/shiny_charm",
+    "charm/utility_charm",
+    "charm/type_charm"
+  ]
+}

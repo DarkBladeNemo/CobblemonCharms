@@ -33,6 +33,10 @@
   "tooltip.cobblemoncharms.exp_boost": "§eExperience: §a+%s§r",
   "message.cobblemoncharms.exp_charm_set": "EXP Charm multiplier set to §a%sx§r",
 
+  "item.cobblemoncharms.catch_charm": "Catch Charm",
+  "item.cobblemoncharms.catch_charm.tooltip": "Increases the catch rate of wild Pokémon when equipped",
+  "tooltip.cobblemoncharms.catch_boost": "§eCatch Rate Multiplier: %s§ax",
+
   "item.cobblemoncharms.multi_charm": "Multi-Charm",
   "item.cobblemoncharms.multi_charm.tooltip": "Combines multiple type charm effects",
   "item.cobblemoncharms.multi_charm.empty": "No types added yet",
@@ -84,6 +88,18 @@
   "advancement.cobblemoncharms.root.type.title": "Type Charms",
   "advancement.cobblemoncharms.root.type.description": "Advancements related to Type Charm unlocks",
 
-  "advancement.cobblemoncharms.root.exp.title": "EXP Charm",
-  "advancement.cobblemoncharms.root.exp.description": "Advancements related to the EXP Charm"
+  "advancement.cobblemoncharms.root.utility.title": "Utility Charms",
+  "advancement.cobblemoncharms.root.utility.description": "Advancements related to the Utility Charms",
+
+  "message.cobblemoncharms.catch_charm_awarded": "Your persistence has paid off — you received a Catch Charm!",
+
+  "advancement.cobblemoncharms.catch_charm.title": "Resistance Is Futile",
+  "advancement.cobblemoncharms.catch_charm.description": "Catch 500 Pokémon to earn the Catch Charm",
+
+  "advancement.cobblemoncharms.root.catch.title": "Catch Charm",
+  "advancement.cobblemoncharms.root.catch.description": "Advancements related to the Catch Charm",
+
+  "trinkets.slot.charm.shiny_charm": "Shiny Charm Slot",
+  "trinkets.slot.charm.utility_charm": "Utility Charm Slot",
+  "trinkets.slot.charm.type_charm": "Type Charm Slot"
 }

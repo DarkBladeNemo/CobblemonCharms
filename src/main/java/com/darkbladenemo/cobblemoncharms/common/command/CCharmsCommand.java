@@ -1,9 +1,10 @@
-package com.darkbladenemo.cobblemoncharms.command;
+package com.darkbladenemo.cobblemoncharms.common.command;
 
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.common.tracking.TypeCharmProgressTracker;
 import com.darkbladenemo.cobblemoncharms.common.util.CharmMultiplierUtils;
+import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.utils.PokedexRegionUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -51,7 +52,7 @@ public class CCharmsCommand {
         }
 
         double threshold = Config.SHINY_CHARM_DEX_THRESHOLD.get();
-        int needed = (int) Math.ceil(progress.totalImplemented() * threshold / 100.0);
+        int needed    = (int) Math.ceil(progress.totalImplemented() * threshold / 100.0);
         int remaining = Math.max(0, needed - progress.totalCaught());
 
         player.sendSystemMessage(Component.literal(
@@ -63,11 +64,10 @@ public class CCharmsCommand {
         player.sendSystemMessage(Component.literal(
                 "§7Completion: §a" + String.format("%.2f", progress.completionPercentage()) + "%"
         ));
-
         player.sendSystemMessage(Component.literal(""));
-
         player.sendSystemMessage(Component.literal(
-                "§7Shiny Charm Threshold: §e" + String.format("%.1f", threshold) + "% §7(§a" + needed + " §7needed)"
+                "§7Shiny Charm Threshold: §e" + String.format("%.1f", threshold)
+                        + "% §7(§a" + needed + " §7needed)"
         ));
 
         if (remaining == 0) {
@@ -97,10 +97,10 @@ public class CCharmsCommand {
         ));
 
         for (CharmType type : CharmType.getEntries()) {
-            int caught = TypeCharmProgressTracker.getUniqueCount(player, type);
+            int caught      = TypeCharmProgressTracker.getUniqueCount(player, type);
             int implemented = TypeCharmProgressTracker.getImplementedCount(type);
-            int threshold = TypeCharmProgressTracker.computeThreshold(type, percentage);
-            boolean done = caught >= threshold;
+            int threshold   = TypeCharmProgressTracker.computeThreshold(type, percentage);
+            boolean done    = caught >= threshold;
 
             String typeName = type.getTranslationKey().substring(0, 1).toUpperCase()
                     + type.getTranslationKey().substring(1);
@@ -125,11 +125,8 @@ public class CCharmsCommand {
             return 0;
         }
 
-        float multiplier = CharmMultiplierUtils.getShinyMultiplier(player);
-        int charmsEquipped = CharmMultiplierUtils.countEquippedCharms(
-                player, "shiny_charm_slot",
-                com.darkbladenemo.cobblemoncharms.init.ModItems.SHINY_CHARM.get()
-        );
+        float multiplier    = CharmMultiplierUtils.getShinyMultiplier(player);
+        int charmsEquipped  = CharmMultiplierUtils.countEquippedCharms(player, ModItems.SHINY_CHARM);
 
         player.sendSystemMessage(Component.literal("§6=== Shiny Charm Debug ==="));
         player.sendSystemMessage(Component.literal("§7Charms equipped: §e" + charmsEquipped));

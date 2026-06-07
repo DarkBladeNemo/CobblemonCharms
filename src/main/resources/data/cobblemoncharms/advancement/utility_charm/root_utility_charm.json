@@ -5,10 +5,10 @@
       "id": "cobblemoncharms:multi_charm"
     },
     "title": {
-      "translate": "advancement.cobblemoncharms.root.exp.title"
+      "translate": "advancement.cobblemoncharms.root.utility.title"
     },
     "description": {
-      "translate": "advancement.cobblemoncharms.root.exp.description"
+      "translate": "advancement.cobblemoncharms.root.utility.description"
     },
     "show_toast": false,
     "announce_to_chat": false

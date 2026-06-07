@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
@@ -24,13 +25,14 @@ import net.minecraft.world.level.Level
  */
 class IVBoostItem(
     val targetStats: Set<Stat>,
-    private val enabledCheck: () -> Boolean
-) : CobblemonItem(Properties()), PokemonSelectingItem {
+    private val enabledCheck: () -> Boolean,
+    properties: Item.Properties = Item.Properties()
+) : CobblemonItem(properties), PokemonSelectingItem {
 
     override val bagItem = null
 
     private fun getIVAmount(stack: ItemStack): Int {
-        val data = stack.get(ModDataComponents.IV_ITEM_DATA.get())
+        val data = stack.get(ModDataComponents.IV_ITEM_DATA)
         return data?.ivAmount() ?: Config.SUPER_IV_INCREASE_AMOUNT.get()
     }
 
@@ -49,13 +51,8 @@ class IVBoostItem(
         stack: ItemStack,
         pokemon: Pokemon
     ): InteractionResultHolder<ItemStack> {
-        if (!enabledCheck()) {
-            return InteractionResultHolder.fail(stack)
-        }
-
-        if (!canUseOnPokemon(stack, pokemon)) {
-            return InteractionResultHolder.fail(stack)
-        }
+        if (!enabledCheck()) return InteractionResultHolder.fail(stack)
+        if (!canUseOnPokemon(stack, pokemon)) return InteractionResultHolder.fail(stack)
 
         val ivIncreaseAmount = getIVAmount(stack)
         var anyChanged = false
@@ -64,7 +61,6 @@ class IVBoostItem(
             if (canChangeIV(stat, pokemon)) {
                 val effectiveIV = pokemon.ivs.getEffectiveBattleIV(stat)
                 val newIV = (effectiveIV + ivIncreaseAmount).coerceAtMost(IVs.MAX_VALUE)
-
                 if (newIV != effectiveIV) {
                     pokemon.hyperTrainIV(stat, newIV)
                     anyChanged = true
@@ -90,7 +86,7 @@ class IVBoostItem(
 
     override fun appendHoverText(
         stack: ItemStack,
-        context: TooltipContext,
+        context: Item.TooltipContext,
         tooltipComponents: MutableList<Component>,
         tooltipFlag: TooltipFlag
     ) {
@@ -98,45 +94,42 @@ class IVBoostItem(
 
         val ivIncreaseAmount = getIVAmount(stack)
 
-        if (targetStats.size == 6) {
-            // Special handling for Gold Bottle Cap (all stats)
-            tooltipComponents.add(
-                Component.translatable("tooltip.cobblemoncharms.bottle_cap_all",
-                    ivIncreaseAmount)
-            )
-        } else if (targetStats.size > 1) {
-            // Multiple stats (but not all 6)
-            val statList = targetStats.joinToString(", ") { stat ->
-                when(stat) {
-                    Stats.HP -> "HP"
-                    Stats.ATTACK -> "Atk"
-                    Stats.DEFENCE -> "Def"
-                    Stats.SPECIAL_ATTACK -> "SpA"
-                    Stats.SPECIAL_DEFENCE -> "SpD"
-                    Stats.SPEED -> "Spe"
-                    else -> "?"
+        when {
+            targetStats.size == 6 -> {
+                tooltipComponents.add(
+                    Component.translatable("tooltip.cobblemoncharms.bottle_cap_all", ivIncreaseAmount)
+                )
+            }
+            targetStats.size > 1 -> {
+                val statList = targetStats.joinToString(", ") { stat ->
+                    when (stat) {
+                        Stats.HP             -> "HP"
+                        Stats.ATTACK         -> "Atk"
+                        Stats.DEFENCE        -> "Def"
+                        Stats.SPECIAL_ATTACK -> "SpA"
+                        Stats.SPECIAL_DEFENCE -> "SpD"
+                        Stats.SPEED          -> "Spe"
+                        else                 -> "?"
+                    }
                 }
+                tooltipComponents.add(
+                    Component.translatable("tooltip.cobblemoncharms.iv_item_multi", statList, ivIncreaseAmount)
+                )
             }
-            tooltipComponents.add(
-                Component.translatable("tooltip.cobblemoncharms.iv_item_multi",
-                    statList, ivIncreaseAmount)
-            )
-        } else {
-            // Single stat
-            val statName = when(targetStats.firstOrNull()) {
-                Stats.HP -> "HP"
-                Stats.ATTACK -> "Attack"
-                Stats.DEFENCE -> "Defence"
-                Stats.SPECIAL_ATTACK -> "Special Attack"
-                Stats.SPECIAL_DEFENCE -> "Special Defence"
-                Stats.SPEED -> "Speed"
-                else -> "IV"
+            else -> {
+                val statName = when (targetStats.firstOrNull()) {
+                    Stats.HP             -> "HP"
+                    Stats.ATTACK         -> "Attack"
+                    Stats.DEFENCE        -> "Defence"
+                    Stats.SPECIAL_ATTACK -> "Special Attack"
+                    Stats.SPECIAL_DEFENCE -> "Special Defence"
+                    Stats.SPEED          -> "Speed"
+                    else                 -> "IV"
+                }
+                tooltipComponents.add(
+                    Component.translatable("tooltip.cobblemoncharms.iv_item", statName, ivIncreaseAmount)
+                )
             }
-
-            tooltipComponents.add(
-                Component.translatable("tooltip.cobblemoncharms.iv_item",
-                    statName, ivIncreaseAmount)
-            )
         }
 
         if (!enabledCheck()) {

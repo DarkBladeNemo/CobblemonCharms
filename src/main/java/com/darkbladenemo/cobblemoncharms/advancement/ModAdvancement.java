@@ -9,7 +9,8 @@ import net.minecraft.server.level.ServerLevel;
 public enum ModAdvancement {
     ROOT("root", null),
     SHINY_CHARM("dex_charm/shiny_charm", "national"),
-    EXP_CHARM("exp_charm/exp_charm", null),
+    EXP_CHARM("utility_charm/exp_charm", null),
+    CATCH_CHARM("utility_charm/catch_charm", null),
     NORMAL_CHARM("type_charms/normal_charm", null),
     FIRE_CHARM("type_charms/fire_charm", null),
     WATER_CHARM("type_charms/water_charm", null),
