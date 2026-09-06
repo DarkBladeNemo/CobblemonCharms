@@ -1,5 +1,6 @@
 package com.darkbladenemo.cobblemoncharms;
 
+import com.cobblemon.mod.common.api.spawning.spawner.FishingSpawnerFactory;
 import com.cobblemon.mod.common.api.spawning.spawner.PlayerSpawnerFactory;
 import com.darkbladenemo.cobblemoncharms.command.CCharmsCommand;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
@@ -25,6 +26,7 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
+import java.util.List;
 import java.util.Map;
 
 @Mod(CobblemonCharmsMod.MOD_ID)
@@ -63,6 +65,9 @@ public class CobblemonCharmsMod {
         // Register charm influence
         PlayerSpawnerFactory.INSTANCE.getInfluenceBuilders().add(TypeCharmInfluence::new);
         PlayerSpawnerFactory.INSTANCE.getInfluenceBuilders().add(ShinyCharmInfluence::new);
+        FishingSpawnerFactory.INSTANCE.getPositionInfluenceBuilders().add(ctx ->
+                List.of(new TypeCharmInfluence(ctx.getPlayer()))
+        );
 
         // Register a creative tab addition
         modEventBus.addListener(this::addCreative);

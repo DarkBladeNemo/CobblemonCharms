@@ -15,6 +15,8 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_ALL_IV_ITEMS;
     public static final ModConfigSpec.BooleanValue ENABLE_ALL_TYPE_CHARMS;
     public static final ModConfigSpec.BooleanValue GRANT_CHARM_ON_ADVANCEMENT;
+    public static final ModConfigSpec.BooleanValue DEX_COMPLETION_COUNTS_SEEN;
+    public static final ModConfigSpec.BooleanValue TYPE_CHARM_COUNTS_SEEN;
 
     // Global charm settings
     public static final ModConfigSpec.BooleanValue CHARM_EFFECT_REQUIRES_ADVANCEMENT;
@@ -127,6 +129,16 @@ public class Config {
                 .comment("If true, charms will be granted when a charm related advancement is earned")
                 .comment("Acts as a master toggle — if false, no charms are granted regardless of per-type settings")
                 .define("grant_charm_on_advancement", true);
+        DEX_COMPLETION_COUNTS_SEEN = BUILDER
+                .comment("If true, Pokédex completion for BOTH regional explorer advancements AND",
+                        "the Shiny Charm's dex-threshold award counts species as complete once seen,",
+                        "not just caught. Lets players unlock these on a 'seen only' basis without",
+                        "lowering the completion percentage threshold itself.")
+                .define("dex_completion_counts_seen", false);
+        TYPE_CHARM_COUNTS_SEEN = BUILDER
+                .comment("If true, Type Charm unlock progress counts a species as qualifying once seen,",
+                        "not just caught.")
+                .define("type_charm_counts_seen", false);
         BUILDER.pop();
 
         BUILDER.push("Training Items");
