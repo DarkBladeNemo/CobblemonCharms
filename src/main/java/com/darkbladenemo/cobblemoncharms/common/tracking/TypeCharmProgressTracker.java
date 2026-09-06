@@ -10,6 +10,7 @@ import com.cobblemon.mod.common.api.types.ElementalType;
 import com.cobblemon.mod.common.pokemon.FormData;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
+import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -113,7 +114,7 @@ public class TypeCharmProgressTracker {
             String speciesPath
     ) {
         FormDexRecord formRecord = speciesRecord.getFormRecord(form.getName());
-        if (formRecord == null || formRecord.getKnowledge() != PokedexEntryProgress.OWNED) return;
+        if (formRecord == null || !meetsRequiredKnowledge(formRecord.getKnowledge())) return;
 
         String key = speciesPath + ":" + form.getName();
         for (CharmType type : getTypesFromForm(form)) {
@@ -165,5 +166,10 @@ public class TypeCharmProgressTracker {
         }
 
         return types;
+    }
+
+    public static boolean meetsRequiredKnowledge(PokedexEntryProgress knowledge) {
+        if (knowledge == PokedexEntryProgress.OWNED) return true;
+        return Config.TYPE_CHARM_COUNTS_SEEN.get() && knowledge == PokedexEntryProgress.SEEN;
     }
 }

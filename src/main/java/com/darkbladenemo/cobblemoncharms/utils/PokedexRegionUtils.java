@@ -10,6 +10,7 @@ import com.cobblemon.mod.common.api.pokedex.def.PokedexDef;
 import com.cobblemon.mod.common.api.pokedex.entry.PokedexEntry;
 import com.cobblemon.mod.common.api.pokemon.PokemonSpecies;
 import com.cobblemon.mod.common.pokemon.Species;
+import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import kotlin.Unit;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.resources.ResourceLocation;
@@ -26,10 +27,11 @@ public class PokedexRegionUtils {
     private static final Map<UUID, Map<String, RegionProgress>> CACHE = new HashMap<>();
 
     public record RegionProgress(String region, int totalImplemented, int totalSeen, int totalCaught,
-                                 double completionPercentage, boolean isCompleted) {
+                                 double completionPercentage, double seenOrCaughtPercentage, boolean isCompleted) {
         public RegionProgress(String region, int totalImplemented, int totalSeen, int totalCaught) {
             this(region, totalImplemented, totalSeen, totalCaught,
                     totalImplemented > 0 ? (double) totalCaught / (double) totalImplemented * 100.0 : 0.0,
+                    totalImplemented > 0 ? (double) (totalSeen + totalCaught) / (double) totalImplemented * 100.0 : 0.0,
                     totalImplemented > 0 && totalCaught == totalImplemented);
         }
 
@@ -66,7 +68,10 @@ public class PokedexRegionUtils {
     public static boolean hasReachedThreshold(ServerPlayer player, String region, double threshold) {
         RegionProgress progress = getRegionProgress(player, region);
         if (progress == null) return false;
-        return progress.completionPercentage() >= threshold;
+        double relevant = Config.DEX_COMPLETION_COUNTS_SEEN.get()
+                ? progress.seenOrCaughtPercentage()
+                : progress.completionPercentage();
+        return relevant >= threshold;
     }
 
     public static boolean isRegionCompleted(ServerPlayer player, String region) {

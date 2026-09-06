@@ -64,6 +64,11 @@ public class CCharmsCommand {
         player.sendSystemMessage(Component.literal(
                 "§7Completion: §a" + String.format("%.2f", progress.completionPercentage()) + "%"
         ));
+        if (Config.DEX_COMPLETION_COUNTS_SEEN.get()) {
+            player.sendSystemMessage(Component.literal(
+                    "§7(Seen-or-caught mode: §a" + String.format("%.2f", progress.seenOrCaughtPercentage()) + "%§7)"
+            ));
+        }
         player.sendSystemMessage(Component.literal(""));
         player.sendSystemMessage(Component.literal(
                 "§7Shiny Charm Threshold: §e" + String.format("%.1f", threshold)
@@ -95,6 +100,9 @@ public class CCharmsCommand {
         player.sendSystemMessage(Component.literal(
                 "§6=== Type Charm Progress §7(threshold: §e" + percentage + "%§7) ==="
         ));
+        if (Config.TYPE_CHARM_COUNTS_SEEN.get()) {
+            player.sendSystemMessage(Component.literal("§7(Counting seen Pokémon, not just caught)"));
+        }
 
         for (CharmType type : CharmType.getEntries()) {
             int caught      = TypeCharmProgressTracker.getUniqueCount(player, type);

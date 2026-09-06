@@ -77,6 +77,8 @@ public class Config {
     public static final BooleanValue ENABLE_ALL_IV_ITEMS    = bool(false, "quick_toggles", "enable_all_iv_items");
     public static final BooleanValue ENABLE_ALL_TYPE_CHARMS = bool(true,  "quick_toggles", "enable_all_type_charms");
     public static final BooleanValue GRANT_CHARM_ON_ADVANCEMENT = bool(true, "quick_toggles", "grant_charm_on_advancement");
+    public static final BooleanValue DEX_COMPLETION_COUNTS_SEEN = bool(false, "quick_toggles", "dex_completion_counts_seen");
+    public static final BooleanValue TYPE_CHARM_COUNTS_SEEN = bool(false, "quick_toggles", "type_charm_counts_seen");
 
     // Global Charm Settings
     public static final BooleanValue CHARM_EFFECT_REQUIRES_ADVANCEMENT =
