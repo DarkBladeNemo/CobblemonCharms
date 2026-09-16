@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "order": 1,
+  "slots": [
+    "shiny_charm_slot",
+    "type_charm_slot",
+    "utility_charm_slot"
+  ],
+  "icon": "cobblemoncharms:gui/group/empty_utility_charm"
+}

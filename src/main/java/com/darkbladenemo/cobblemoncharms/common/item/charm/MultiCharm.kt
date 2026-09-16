@@ -18,13 +18,10 @@ import net.minecraft.world.item.Rarity
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
 import net.neoforged.neoforge.network.PacketDistributor
-import top.theillusivec4.curios.api.type.capability.ICurioItem
 
-class MultiCharm : Item(
-    Properties()
-        .stacksTo(1)
-        .rarity(Rarity.RARE)
-), ICurioItem {
+class MultiCharm @JvmOverloads constructor(
+    properties: Properties = Properties().stacksTo(1).rarity(Rarity.UNCOMMON)
+) : Item(properties) {
 
     override fun use(level: Level, player: Player, usedHand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(usedHand)

@@ -4,6 +4,7 @@ import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.init.ModItems
 import com.darkbladenemo.cobblemoncharms.network.payload.OpenMultiCharmFromCurioPayload
+import io.wispforest.accessories.api.AccessoriesCapability
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
@@ -12,7 +13,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.player.Player
 import net.neoforged.neoforge.network.PacketDistributor
-import top.theillusivec4.curios.api.CuriosApi
 
 class MultiCharmSelectionScreen(
     private val player: Player,
@@ -58,18 +58,16 @@ class MultiCharmSelectionScreen(
 
         charmEntries.clear()
 
-        CuriosApi.getCuriosInventory(player).ifPresent { inventory ->
-            val slots = inventory.findCurios("type_charm_slot")
+        val capability = AccessoriesCapability.get(player)
+        val container = capability?.containers?.get("type_charm_slot")
+        if (container != null) {
             var entryIndex = 0
-
             slotIndices.forEach { slotIndex ->
-                if (slotIndex < slots.size) {
-                    val stack = slots[slotIndex].stack()
+                if (slotIndex < container.size) {
+                    val stack = container.accessories.getItem(slotIndex)
                     if (stack.`is`(ModItems.MULTI_CHARM.get())) {
-                        val data = stack.get(ModDataComponents.MULTI_CHARM_DATA.get())
-                            ?: MultiCharmData.empty()
-                        val typeLines = buildTypeLines(data)
-                        charmEntries.add(CharmEntry(slotIndex, entryIndex + 1, data, typeLines))
+                        val data = stack.get(ModDataComponents.MULTI_CHARM_DATA.get()) ?: MultiCharmData.empty()
+                        charmEntries.add(CharmEntry(slotIndex, entryIndex + 1, data, buildTypeLines(data)))
                         entryIndex++
                     }
                 }

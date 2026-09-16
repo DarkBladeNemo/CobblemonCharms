@@ -4,9 +4,10 @@ import com.darkbladenemo.cobblemoncharms.CobblemonCharmsMod
 import com.darkbladenemo.cobblemoncharms.client.util.ClientTooltipUtils
 import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.common.config.Config
-import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType
+import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.network.payload.ToggleMultiCharmTypePayload
+import io.wispforest.accessories.api.AccessoriesCapability
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
@@ -16,7 +17,6 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.neoforged.neoforge.network.PacketDistributor
-import top.theillusivec4.curios.api.CuriosApi
 
 class MultiCharmButton(
     x: Int,
@@ -120,11 +120,10 @@ class MultiCharmScreen(
 
         multiCharmStack = if (fromCurio && curioSlotIndex >= 0) {
             var stack = ItemStack.EMPTY
-            CuriosApi.getCuriosInventory(player).ifPresent { inventory ->
-                val slots = inventory.findCurios("type_charm_slot")
-                if (curioSlotIndex < slots.size) {
-                    stack = slots[curioSlotIndex].stack()
-                }
+            val capability = AccessoriesCapability.get(player)
+            val container = capability?.containers?.get("type_charm_slot")
+            if (container != null && curioSlotIndex < container.size) {
+                stack = container.accessories.getItem(curioSlotIndex)
             }
             stack
         } else {

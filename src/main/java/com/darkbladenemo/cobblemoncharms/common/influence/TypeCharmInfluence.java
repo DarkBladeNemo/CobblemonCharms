@@ -15,13 +15,13 @@ import com.darkbladenemo.cobblemoncharms.common.item.charm.TypeCharm;
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.common.util.CobblemonCharmsUtils;
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.*;
 
@@ -130,39 +130,37 @@ public class TypeCharmInfluence implements SpawningInfluence {
     private Map<CharmType, Float> calculateCharmMultipliers() {
         Map<CharmType, Float> multipliers = new EnumMap<>(CharmType.class);
 
-        CuriosApi.getCuriosInventory(player).ifPresent(inventory ->
-                inventory.findCurios("type_charm_slot").forEach(slotResult -> {
-                    ItemStack stack = slotResult.stack();
+        AccessoriesCapability capability = AccessoriesCapability.get(player);
+        if (capability == null) return multipliers;
 
-                    if (stack.isEmpty()) {
-                        return;
-                    }
+        var equipped = capability.getEquipped(stack ->
+                stack.getItem() instanceof TypeCharm || stack.is(ModItems.MULTI_CHARM.get()));
 
-                    if (stack.getItem() instanceof TypeCharm) {
-                        TypeCharmData data = stack.get(ModDataComponents.TYPE_CHARM_DATA.get());
-                        if (data == null) {
-                            ModItems.TYPE_CHARMS.forEach((type, deferredCharm) -> {
-                                if (stack.is(deferredCharm.get()) && isTypeEffectAllowed(player, type)) {
-                                    addMultiplier(multipliers, type,
-                                            Config.TYPE_CHARM_MATCH_MULTIPLIER.get().floatValue());
-                                }
-                            });
-                        } else {
-                            if (isTypeEffectAllowed(player, data.type())) {
-                                addMultiplier(multipliers, data.type(), data.matchMultiplier());
-                            }
+        for (var entry : equipped) {
+            ItemStack stack = entry.stack();
+
+            if (stack.getItem() instanceof TypeCharm) {
+                TypeCharmData data = stack.get(ModDataComponents.TYPE_CHARM_DATA.get());
+                if (data == null) {
+                    ModItems.TYPE_CHARMS.forEach((type, deferredCharm) -> {
+                        if (stack.is(deferredCharm.get()) && isTypeEffectAllowed(player, type)) {
+                            addMultiplier(multipliers, type, Config.TYPE_CHARM_MATCH_MULTIPLIER.get().floatValue());
                         }
-                    } else if (stack.is(ModItems.MULTI_CHARM.get())) {
-                        MultiCharmData multiData = stack.get(ModDataComponents.MULTI_CHARM_DATA.get());
-                        if (multiData != null) {
-                            multiData.getEnabledEffects().forEach((type, effect) -> {
-                                if (isTypeEffectAllowed(player, type)) {
-                                    addMultiplier(multipliers, type, effect.matchMultiplier());
-                                }
-                            });
+                    });
+                } else if (isTypeEffectAllowed(player, data.type())) {
+                    addMultiplier(multipliers, data.type(), data.matchMultiplier());
+                }
+            } else {
+                MultiCharmData multiData = stack.get(ModDataComponents.MULTI_CHARM_DATA.get());
+                if (multiData != null) {
+                    multiData.getEnabledEffects().forEach((type, effect) -> {
+                        if (isTypeEffectAllowed(player, type)) {
+                            addMultiplier(multipliers, type, effect.matchMultiplier());
                         }
-                    }
-                }));
+                    });
+                }
+            }
+        }
 
         return multipliers;
     }

@@ -42,9 +42,9 @@ ordering="NONE"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
-modId="curios"
+modId="accessories"
 type="required"
-versionRange="[9.5.1, )"
+versionRange="[1.1.0-beta.52, )"
 ordering="NONE"
 side="BOTH"
 

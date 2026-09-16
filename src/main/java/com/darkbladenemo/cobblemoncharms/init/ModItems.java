@@ -86,16 +86,16 @@ public class ModItems {
 
     // Charms
     public static final Supplier<Item> SHINY_CHARM = ITEMS.register("shiny_charm",
-            ShinyCharm::new);
+            () -> new ShinyCharm());
 
     public static final Supplier<Item> EXP_CHARM = ITEMS.register("exp_charm",
-            ExpCharm::new);
+            () -> new ExpCharm());
 
     public static final Supplier<Item> CATCH_CHARM = ITEMS.register("catch_charm",
-            CatchCharm::new);
+            () -> new CatchCharm());
 
     public static final Supplier<Item> MULTI_CHARM = ITEMS.register("multi_charm",
-            MultiCharm::new);
+            () -> new MultiCharm());
 
     // Static initializer block to register type charms
     static {

@@ -3,15 +3,15 @@ package com.darkbladenemo.cobblemoncharms.client.keybind;
 import com.darkbladenemo.cobblemoncharms.CobblemonCharmsMod;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.network.payload.OpenMultiCharmFromCurioPayload;
+import io.wispforest.accessories.api.AccessoriesCapability;
+import io.wispforest.accessories.api.slot.SlotEntryReference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,16 +29,12 @@ public class KeyInputHandler {
         if (ModKeyBindings.OPEN_MULTI_CHARM_GUI.consumeClick()) {
             // Collect all Multi-Charms in "type_charm_slot" curio slots
             List<Integer> multiCharmSlots = new ArrayList<>();
-
-            CuriosApi.getCuriosInventory(player).ifPresent(inventory -> {
-                var slots = inventory.findCurios("type_charm_slot");
-                for (int i = 0; i < slots.size(); i++) {
-                    ItemStack stack = slots.get(i).stack();
-                    if (stack.is(ModItems.MULTI_CHARM.get())) {
-                        multiCharmSlots.add(i);
-                    }
+            AccessoriesCapability capability = AccessoriesCapability.get(player);
+            if (capability != null) {
+                for (SlotEntryReference ref : capability.getEquipped(ModItems.MULTI_CHARM.get())) {
+                    multiCharmSlots.add(ref.reference().slot());
                 }
-            });
+            }
 
             if (!multiCharmSlots.isEmpty()) {
                 if (multiCharmSlots.size() == 1) {

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "amount": 1,
+  "operation": "set",
+  "order": 1,
+  "icon": "cobblemoncharms:gui/slot/empty_utility_charm"
+}

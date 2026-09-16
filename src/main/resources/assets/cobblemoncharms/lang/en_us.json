@@ -97,5 +97,10 @@
   "advancement.cobblemoncharms.catch_charm.description": "Catch 500 Pokémon to earn the Catch Charm",
 
   "advancement.cobblemoncharms.root.catch.title": "Catch Charm",
-  "advancement.cobblemoncharms.root.catch.description": "Advancements related to the Catch Charm"
+  "advancement.cobblemoncharms.root.catch.description": "Advancements related to the Catch Charm",
+
+  "accessories.slot.shiny_charm_slot": "Shiny Charm Slot",
+  "accessories.slot.type_charm_slot": "Type Charm Slot",
+  "accessories.slot.utility_charm_slot": "Utility Charm Slot",
+  "accessories.slot_group.cobblemon_charms_group": "CobblemonCharms"
 }

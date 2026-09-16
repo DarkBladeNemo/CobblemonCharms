@@ -8,6 +8,7 @@ import com.darkbladenemo.cobblemoncharms.init.ModDataComponents;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.network.payload.*;
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -15,7 +16,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import top.theillusivec4.curios.api.CuriosApi;
 
 @EventBusSubscriber(modid = CobblemonCharmsMod.MOD_ID)
 public class ModNetworking {
@@ -70,18 +70,17 @@ public class ModNetworking {
                 (payload, context) -> context.enqueueWork(() -> {
                     ServerPlayer player = (ServerPlayer) context.player();
 
-                    CuriosApi.getCuriosInventory(player).ifPresent(inventory -> {
-                        var slots = inventory.findCurios("type_charm_slot");
-                        int slotIndex = payload.slotIndex();
+                    AccessoriesCapability capability = AccessoriesCapability.get(player);
+                    var container = capability != null ? capability.getContainers().get("type_charm_slot") : null;
+                    int slotIndex = payload.slotIndex();
 
-                        if (slotIndex >= 0 && slotIndex < slots.size()) {
-                            ItemStack stack = slots.get(slotIndex).stack();
-                            if (stack.is(ModItems.MULTI_CHARM.get())) {
-                                PacketDistributor.sendToPlayer(player,
-                                        new OpenMultiCharmScreenPayload(slotIndex, true));
-                            }
+                    if (container != null && slotIndex >= 0 && slotIndex < container.getSize()) {
+                        ItemStack stack = container.getAccessories().getItem(slotIndex);
+                        if (stack.is(ModItems.MULTI_CHARM.get())) {
+                            PacketDistributor.sendToPlayer(player,
+                                    new OpenMultiCharmScreenPayload(slotIndex, true));
                         }
-                    });
+                    }
                 })
         );
 
@@ -130,14 +129,12 @@ public class ModNetworking {
     private static ItemStack getMultiCharmStack(ServerPlayer player,
                                                 int curioSlotIndex, boolean fromCurio) {
         if (fromCurio && curioSlotIndex >= 0) {
-            ItemStack[] result = {ItemStack.EMPTY};
-            CuriosApi.getCuriosInventory(player).ifPresent(inventory -> {
-                var slots = inventory.findCurios("type_charm_slot");
-                if (curioSlotIndex < slots.size()) {
-                    result[0] = slots.get(curioSlotIndex).stack();
-                }
-            });
-            return result[0];
+            AccessoriesCapability capability = AccessoriesCapability.get(player);
+            var container = capability != null ? capability.getContainers().get("type_charm_slot") : null;
+            if (container != null && curioSlotIndex < container.getSize()) {
+                return container.getAccessories().getItem(curioSlotIndex);
+            }
+            return ItemStack.EMPTY;
         }
 
         if (player.getMainHandItem().is(ModItems.MULTI_CHARM.get())) {

@@ -135,8 +135,7 @@ public class CCharmsCommand {
 
         float multiplier = CharmMultiplierUtils.getShinyMultiplier(player);
         int charmsEquipped = CharmMultiplierUtils.countEquippedCharms(
-                player, "shiny_charm_slot",
-                com.darkbladenemo.cobblemoncharms.init.ModItems.SHINY_CHARM.get()
+                player, com.darkbladenemo.cobblemoncharms.init.ModItems.SHINY_CHARM.get()
         );
 
         player.sendSystemMessage(Component.literal("§6=== Shiny Charm Debug ==="));
