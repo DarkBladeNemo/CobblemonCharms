@@ -38,6 +38,7 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_CATCH_CHARM;
     public static final ModConfigSpec.BooleanValue GRANT_CATCH_CHARM_ON_ADVANCEMENT;
     public static final ModConfigSpec.DoubleValue CATCH_CHARM_MULTIPLIER;
+    public static final ModConfigSpec.IntValue CATCH_CHARM_REQUIRED_CAPTURES;
 
     // Multi Charm
     public static final ModConfigSpec.BooleanValue ENABLE_MULTI_CHARM;
@@ -231,6 +232,9 @@ public class Config {
         CATCH_CHARM_MULTIPLIER = BUILDER
                 .comment("Catch rate multiplier when Catch Charm is equipped (default: 2.0 = double catch rate)")
                 .defineInRange("catch_charm_multiplier", 2.0, 1.0, 10.0);
+        CATCH_CHARM_REQUIRED_CAPTURES = BUILDER
+                .comment("Total lifetime Pokémon captures required to earn the Catch Charm (default: 500)")
+                .defineInRange("catch_charm_required_captures", 500, 1, 1_000_000);
         BUILDER.pop();
 
         BUILDER.push("Multi Charm");
