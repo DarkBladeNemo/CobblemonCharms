@@ -1,5 +1,6 @@
 package com.darkbladenemo.cobblemoncharms.client.gui
 
+import com.darkbladenemo.cobblemoncharms.client.util.ClientTooltipUtils
 import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.init.ModItems
@@ -91,7 +92,7 @@ class MultiCharmSelectionScreen(
                     Component.translatable(
                         "gui.cobblemoncharms.multi_charm_selection.charm_label",
                         entry.index,
-                        entry.data.getEnabledEffects().size
+                        entry.data.typeEffects().size
                     )
                 ) { _ ->
                     PacketDistributor.sendToServer(OpenMultiCharmFromCurioPayload(entry.slotIndex))
@@ -104,11 +105,13 @@ class MultiCharmSelectionScreen(
     }
 
     private fun buildTypeLines(data: MultiCharmData): List<String> {
-        val enabledTypes = data.getEnabledEffects()
-        if (enabledTypes.isEmpty()) return emptyList()
+        val activeTypes = data.typeEffects().entries
+            .filter { (type, effect) -> ClientTooltipUtils.isTypeEffectActive(type, effect) }
+            .map { it.key }
+        if (activeTypes.isEmpty()) return emptyList()
 
         val maxWidth = GUI_WIDTH - PADDING * 2 - 4
-        val typeNames = enabledTypes.keys.sortedBy { it.name }.map { type ->
+        val typeNames = activeTypes.sortedBy { it.name }.map { type ->
             type.translationKey.replaceFirstChar { it.uppercase() }
         }
 
