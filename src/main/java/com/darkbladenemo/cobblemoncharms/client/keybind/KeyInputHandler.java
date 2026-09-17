@@ -3,14 +3,13 @@ package com.darkbladenemo.cobblemoncharms.client.keybind;
 import com.darkbladenemo.cobblemoncharms.client.gui.MultiCharmSelectionScreen;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.network.payload.OpenMultiCharmFromCurioPayload;
-import dev.emi.trinkets.api.TrinketsApi;
+import io.wispforest.accessories.api.AccessoriesCapability;
+import io.wispforest.accessories.api.slot.SlotEntryReference;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +29,12 @@ public class KeyInputHandler {
             if (player == null) return;
 
             List<Integer> multiCharmSlots = new ArrayList<>();
-
-            TrinketsApi.getTrinketComponent(player).ifPresent(trinkets -> {
-                var slots = trinkets.getEquipped(item -> item.is(ModItems.MULTI_CHARM));
-                for (int i = 0; i < slots.size(); i++) {
-                    multiCharmSlots.add(i);
+            AccessoriesCapability capability = AccessoriesCapability.get(player);
+            if (capability != null) {
+                for (SlotEntryReference ref : capability.getEquipped(ModItems.MULTI_CHARM)) {
+                    multiCharmSlots.add(ref.reference().slot());
                 }
-            });
+            }
 
             if (multiCharmSlots.isEmpty()) return;
 

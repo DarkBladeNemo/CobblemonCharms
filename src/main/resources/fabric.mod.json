@@ -33,7 +33,7 @@
     "fabric-api": "*",
     "fabric-language-kotlin": ">=${kotlin_fabric_version}",
     "cobblemon": ">=${cobblemon_version}",
-    "trinkets": "*"
+    "accessories": "*"
   },
 
   "suggests": {

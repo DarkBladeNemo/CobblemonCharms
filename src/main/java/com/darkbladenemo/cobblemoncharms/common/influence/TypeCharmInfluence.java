@@ -15,8 +15,7 @@ import com.darkbladenemo.cobblemoncharms.common.item.charm.TypeCharm;
 import com.darkbladenemo.cobblemoncharms.common.util.CobblemonCharmsUtils;
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
-import dev.emi.trinkets.api.TrinketInventory;
-import dev.emi.trinkets.api.TrinketsApi;
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -115,14 +114,34 @@ public class TypeCharmInfluence implements SpawningInfluence {
     private Map<CharmType, Float> calculateCharmMultipliers() {
         Map<CharmType, Float> multipliers = new EnumMap<>(CharmType.class);
 
-        var optional = TrinketsApi.getTrinketComponent(player);
-        if (optional.isEmpty()) return multipliers;
+        AccessoriesCapability capability = AccessoriesCapability.get(player);
+        if (capability == null) return multipliers;
 
-        for (Map<String, TrinketInventory> slotGroup : optional.get().getInventory().values()) {
-            for (TrinketInventory inv : slotGroup.values()) {
-                for (int i = 0; i < inv.getContainerSize(); i++) {
-                    ItemStack stack = inv.getItem(i);
-                    if (!stack.isEmpty()) processStack(stack, multipliers);
+        var equipped = capability.getEquipped(stack ->
+                stack.getItem() instanceof TypeCharm || stack.is(ModItems.MULTI_CHARM));
+
+        for (var entry : equipped) {
+            ItemStack stack = entry.stack();
+
+            if (stack.getItem() instanceof TypeCharm) {
+                TypeCharmData data = stack.get(ModDataComponents.TYPE_CHARM_DATA);
+                if (data == null) {
+                    ModItems.TYPE_CHARMS.forEach((type, charm) -> {
+                        if (stack.is(charm) && isTypeEffectAllowed(type)) {
+                            addMultiplier(multipliers, type, (float) Config.TYPE_CHARM_MATCH_MULTIPLIER.get());
+                        }
+                    });
+                } else if (isTypeEffectAllowed(data.type())) {
+                    addMultiplier(multipliers, data.type(), data.matchMultiplier());
+                }
+            } else {
+                MultiCharmData multiData = stack.get(ModDataComponents.MULTI_CHARM_DATA);
+                if (multiData != null) {
+                    multiData.getEnabledEffects().forEach((type, effect) -> {
+                        if (isTypeEffectAllowed(type)) {
+                            addMultiplier(multipliers, type, effect.matchMultiplier());
+                        }
+                    });
                 }
             }
         }

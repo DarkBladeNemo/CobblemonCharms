@@ -3,17 +3,16 @@ package com.darkbladenemo.cobblemoncharms.common.item.charm
 import com.darkbladenemo.cobblemoncharms.client.util.ClientTooltipUtils
 import com.darkbladenemo.cobblemoncharms.common.config.Config
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
-import dev.emi.trinkets.api.TrinketItem
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Rarity
 import net.minecraft.world.item.TooltipFlag
 
-class TypeCharm @JvmOverloads constructor(
+class TypeCharm(
     private val type: CharmType,
     properties: Item.Properties = Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)
-) : TrinketItem(properties) {
+) : Item(properties) {
 
     override fun appendHoverText(
         stack: ItemStack,

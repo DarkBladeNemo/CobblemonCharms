@@ -16,11 +16,7 @@
   },
   "criteria": {
     "catch_pokemon": {
-      "trigger": "cobblemon:catch_pokemon",
-      "conditions": {
-        "count": 500,
-        "type": "any"
-      }
+      "trigger": "minecraft:impossible"
     }
   }
 }

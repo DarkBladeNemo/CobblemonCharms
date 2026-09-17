@@ -4,12 +4,14 @@ import com.darkbladenemo.cobblemoncharms.CobblemonCharmsFabric
 import com.darkbladenemo.cobblemoncharms.client.util.ClientTooltipUtils
 import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.common.config.Config
-import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType
+import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.network.payload.ToggleMultiCharmTypePayload
-import dev.emi.trinkets.api.TrinketInventory
-import dev.emi.trinkets.api.TrinketsApi
+import io.wispforest.accessories.api.AccessoriesCapability
+import io.wispforest.accessories.client.gui.ButtonEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.event.Event
+import net.fabricmc.fabric.api.event.EventFactory
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
@@ -30,6 +32,15 @@ class MultiCharmButton(
     private var isBlocked: Boolean,
     onPress: OnPress
 ) : Button(x, y, width, height, message, onPress, DEFAULT_NARRATION) {
+
+    private val renderingEvent: Event<ButtonEvents.AdjustRendering> =
+        EventFactory.createArrayBacked(ButtonEvents.AdjustRendering::class.java) { invokers ->
+            ButtonEvents.AdjustRendering { button, guiGraphics, sprite, x, y, width, height ->
+                invokers.any { it.render(button, guiGraphics, sprite, x, y, width, height) }
+            }
+        }
+
+    override fun getRenderingEvent(): Event<ButtonEvents.AdjustRendering> = renderingEvent
 
     companion object {
         private val TEXTURE_DISABLED = ResourceLocation.fromNamespaceAndPath(
@@ -116,19 +127,15 @@ class MultiCharmScreen(
         createButtons()
     }
 
-    /**
-     * Resolves the Multi-Charm stack from Trinkets using the slot index.
-     * The slot index is a linear index into all stacks in charm/type_charm.
-     */
+    // Update Docs
     private fun resolveFromTrinket(): ItemStack {
         var result = ItemStack.EMPTY
-        TrinketsApi.getTrinketComponent(player).ifPresent { trinkets ->
-            val inv: TrinketInventory? = trinkets.getInventory()["charm"]?.get("type_charm")
-            if (inv != null && curioSlotIndex < inv.getContainerSize()) {
-                val stack = inv.getItem(curioSlotIndex)
-                if (stack.item is com.darkbladenemo.cobblemoncharms.common.item.charm.MultiCharm) {
-                    result = stack
-                }
+        val capability = AccessoriesCapability.get(player)
+        val container = capability?.containers?.get("type_charm_slot")
+        if (container != null && curioSlotIndex < container.size) {
+            val stack = container.accessories.getItem(curioSlotIndex)
+            if (stack.item is com.darkbladenemo.cobblemoncharms.common.item.charm.MultiCharm) {
+                result = stack
             }
         }
         return result

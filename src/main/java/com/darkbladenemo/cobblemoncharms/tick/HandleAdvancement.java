@@ -1,5 +1,6 @@
 package com.darkbladenemo.cobblemoncharms.tick;
 
+import com.cobblemon.mod.common.api.stats.CobblemonStats;
 import com.darkbladenemo.cobblemoncharms.advancement.ModAdvancement;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.event.AdvancementRewardHandler;
@@ -9,8 +10,10 @@ import com.darkbladenemo.cobblemoncharms.utils.AdvancementUtils;
 import com.darkbladenemo.cobblemoncharms.utils.PokedexRegionUtils;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.item.ItemStack;
 
 public class HandleAdvancement {
@@ -19,6 +22,7 @@ public class HandleAdvancement {
         server.getPlayerList().getPlayers().forEach(player -> {
             grantRootAdvancement(player);
             checkShinyCharmThreshold(player);
+            checkCatchCharmThreshold(player);
             checkRegionCompletions(player);
             AdvancementRewardHandler.checkRewards(player);
             TypeCharmAdvancementEvents.checkAllTypeCharmsForPlayer(player);
@@ -52,6 +56,20 @@ public class HandleAdvancement {
         if (newlyGranted && Config.GRANT_CHARM_ON_ADVANCEMENT.get() && Config.GRANT_SHINY_CHARM_ON_ADVANCEMENT.get()) {
             giveShinyCharm(player, threshold);
         }
+    }
+
+    private static void checkCatchCharmThreshold(ServerPlayer player) {
+        if (!Config.ENABLE_CATCH_CHARM.get()) return;
+
+        ResourceLocation statId = CobblemonStats.getStat(CobblemonStats.CAPTURED);
+        int captured = player.getStats().getValue(Stats.CUSTOM.get(statId));
+
+        if (captured < Config.CATCH_CHARM_REQUIRED_CAPTURES.get()) return;
+
+        AdvancementHolder catchCharmAdvancement =
+                ModAdvancement.CATCH_CHARM.getAdvancement(player.serverLevel());
+
+        AdvancementUtils.grantAdvancement(player, catchCharmAdvancement);
     }
 
     private static void giveShinyCharm(ServerPlayer player, double threshold) {

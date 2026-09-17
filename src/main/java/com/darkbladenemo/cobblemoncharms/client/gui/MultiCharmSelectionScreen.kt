@@ -4,8 +4,7 @@ import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.common.item.charm.MultiCharm
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.network.payload.OpenMultiCharmFromCurioPayload
-import dev.emi.trinkets.api.TrinketInventory
-import dev.emi.trinkets.api.TrinketsApi
+import io.wispforest.accessories.api.AccessoriesCapability
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.GuiGraphics
@@ -56,20 +55,17 @@ class MultiCharmSelectionScreen(
         super.init()
         charmEntries.clear()
 
-        TrinketsApi.getTrinketComponent(player).ifPresent { trinkets ->
-            val inv: TrinketInventory? = trinkets.getInventory()["charm"]?.get("type_charm")
-            if (inv != null) {
-                var entryIndex = 0
-                slotIndices.forEach { slotIndex ->
-                    if (slotIndex < inv.getContainerSize()) {
-                        val stack = inv.getItem(slotIndex)
-                        if (stack.item is MultiCharm) {
-                            val data = stack.get(ModDataComponents.MULTI_CHARM_DATA)
-                                ?: MultiCharmData.empty()
-                            val typeLines = buildTypeLines(data)
-                            charmEntries.add(CharmEntry(slotIndex, entryIndex + 1, data, typeLines))
-                            entryIndex++
-                        }
+        val capability = AccessoriesCapability.get(player)
+        val container = capability?.containers?.get("type_charm_slot")
+        if (container != null) {
+            var entryIndex = 0
+            slotIndices.forEach { slotIndex ->
+                if (slotIndex < container.size) {
+                    val stack = container.accessories.getItem(slotIndex)
+                    if (stack.item is MultiCharm) {
+                        val data = stack.get(ModDataComponents.MULTI_CHARM_DATA) ?: MultiCharmData.empty()
+                        charmEntries.add(CharmEntry(slotIndex, entryIndex + 1, data, buildTypeLines(data)))
+                        entryIndex++
                     }
                 }
             }
@@ -91,7 +87,7 @@ class MultiCharmSelectionScreen(
                 Button.builder(
                     Component.translatable(
                         "gui.cobblemoncharms.multi_charm_selection.charm_label",
-                        entry.index, entry.data.getEnabledEffects().size)
+                        entry.index, entry.data.typeEffects().size)
                 ) { _ ->
                     ClientPlayNetworking.send(OpenMultiCharmFromCurioPayload(entry.slotIndex))
                     onClose()

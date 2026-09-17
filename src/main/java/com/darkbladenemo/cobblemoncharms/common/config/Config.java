@@ -113,6 +113,8 @@ public class Config {
             doubleVal(2.0, 1.0, 10.0, "charms", "catch_charm", "multiplier");
     public static final BooleanValue GRANT_CATCH_CHARM_ON_ADVANCEMENT =
             bool(true, "charms", "catch_charm", "grant_on_advancement");
+    public static final IntValue CATCH_CHARM_REQUIRED_CAPTURES =
+            intVal(500, 1, 1_000_000, "charms", "catch_charm", "required_captures");
 
     // Multi Charm
     public static final BooleanValue ENABLE_MULTI_CHARM =

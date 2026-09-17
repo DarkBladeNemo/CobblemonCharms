@@ -6,7 +6,7 @@ import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.network.payload.*;
-import dev.emi.trinkets.api.TrinketsApi;
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;
@@ -65,18 +65,18 @@ public class ModNetworking {
                 (payload, context) -> {
                     ServerPlayer player = context.player();
                     context.server().execute(() -> {
-                        TrinketsApi.getTrinketComponent(player).ifPresent(trinkets -> {
-                            var slots = trinkets.getEquipped(item ->
-                                    item.is(ModItems.MULTI_CHARM));
-                            int slotIndex = payload.slotIndex();
-                            if (slotIndex >= 0 && slotIndex < slots.size()) {
-                                ItemStack stack = slots.get(slotIndex).getB();
-                                if (stack.is(ModItems.MULTI_CHARM)) {
-                                    ServerPlayNetworking.send(player,
-                                            new OpenMultiCharmScreenPayload(slotIndex, true));
-                                }
+                        AccessoriesCapability capability = AccessoriesCapability.get(player);
+                        var container = capability != null
+                                ? capability.getContainers().get("type_charm_slot") : null;
+                        int slotIndex = payload.slotIndex();
+
+                        if (container != null && slotIndex >= 0 && slotIndex < container.getSize()) {
+                            ItemStack stack = container.getAccessories().getItem(slotIndex);
+                            if (stack.is(ModItems.MULTI_CHARM)) {
+                                ServerPlayNetworking.send(player,
+                                        new OpenMultiCharmScreenPayload(slotIndex, true));
                             }
-                        });
+                        }
                     });
                 });
     }
@@ -97,16 +97,13 @@ public class ModNetworking {
 
     static ItemStack getMultiCharmStack(ServerPlayer player, int slotIndex, boolean fromTrinket) {
         if (fromTrinket && slotIndex >= 0) {
-            ItemStack[] result = {ItemStack.EMPTY};
-            TrinketsApi.getTrinketComponent(player).ifPresent(trinkets -> {
-                var slots = trinkets.getEquipped(item -> item.is(ModItems.MULTI_CHARM));
-                if (slotIndex < slots.size()) {
-                    result[0] = slots.get(slotIndex).getB();
-                }
-            });
-            return result[0];
+            AccessoriesCapability capability = AccessoriesCapability.get(player);
+            var container = capability != null ? capability.getContainers().get("type_charm_slot") : null;
+            if (container != null && slotIndex < container.getSize()) {
+                return container.getAccessories().getItem(slotIndex);
+            }
+            return ItemStack.EMPTY;
         }
-
         if (player.getMainHandItem().is(ModItems.MULTI_CHARM)) return player.getMainHandItem();
         if (player.getOffhandItem().is(ModItems.MULTI_CHARM))  return player.getOffhandItem();
         return ItemStack.EMPTY;

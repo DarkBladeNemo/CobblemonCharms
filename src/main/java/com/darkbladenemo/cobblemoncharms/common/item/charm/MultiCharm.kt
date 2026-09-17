@@ -5,8 +5,6 @@ import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.common.config.Config
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import com.darkbladenemo.cobblemoncharms.network.payload.OpenMultiCharmScreenPayload
-import dev.emi.trinkets.api.TrinketItem
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.ChatFormatting
 import net.minecraft.client.gui.screens.Screen
@@ -22,8 +20,8 @@ import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
 
 class MultiCharm(
-    properties: Item.Properties = Item.Properties().stacksTo(1).rarity(Rarity.RARE)
-) : TrinketItem(properties) {
+    properties: Item.Properties = Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)
+) : Item(properties) {
 
     override fun use(level: Level, player: Player, usedHand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(usedHand)
