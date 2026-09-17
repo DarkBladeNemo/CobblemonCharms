@@ -94,10 +94,7 @@ class MultiCharm(
                 }
             } else {
                 val activeCount = data.typeEffects().entries.count { (type, effect) ->
-                    effect.enabled() &&
-                            ClientTooltipUtils.isTypeCharmEnabled(type) &&
-                            (!Config.CHARM_EFFECT_REQUIRES_ADVANCEMENT.get() ||
-                                    ClientTooltipUtils.hasAdvancement("${type.translationKey}_charm"))
+                    ClientTooltipUtils.isTypeEffectActive(type, effect)
                 }
                 val totalCount = data.typeEffects().size
 

@@ -1,5 +1,6 @@
 package com.darkbladenemo.cobblemoncharms.client.gui
 
+import com.darkbladenemo.cobblemoncharms.client.util.ClientTooltipUtils
 import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.common.item.charm.MultiCharm
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
@@ -100,15 +101,18 @@ class MultiCharmSelectionScreen(
     }
 
     private fun buildTypeLines(data: MultiCharmData): List<String> {
-        val enabledTypes = data.getEnabledEffects()
-        if (enabledTypes.isEmpty()) return emptyList()
+        val activeTypes = data.typeEffects().entries
+            .filter { (type, effect) -> ClientTooltipUtils.isTypeEffectActive(type, effect) }
+            .map { it.key }
+        if (activeTypes.isEmpty()) return emptyList()
 
         val maxWidth  = GUI_WIDTH - PADDING * 2 - 4
-        val typeNames = enabledTypes.keys.sortedBy { it.name }
+        val typeNames = activeTypes.sortedBy { it.name }
             .map { type -> type.translationKey.replaceFirstChar { it.uppercase() } }
 
         val lines = mutableListOf<String>()
         var currentLine = ""
+
         typeNames.forEach { name ->
             val test = if (currentLine.isEmpty()) name else "$currentLine, $name"
             if (font.width(test) > maxWidth && currentLine.isNotEmpty()) {
@@ -119,6 +123,7 @@ class MultiCharmSelectionScreen(
             }
         }
         if (currentLine.isNotEmpty()) lines.add(currentLine)
+
         return lines
     }
 

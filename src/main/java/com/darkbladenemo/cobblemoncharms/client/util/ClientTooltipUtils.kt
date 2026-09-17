@@ -1,6 +1,7 @@
 package com.darkbladenemo.cobblemoncharms.client.util
 
 import com.darkbladenemo.cobblemoncharms.CobblemonCharmsFabric
+import com.darkbladenemo.cobblemoncharms.common.component.MultiCharmData
 import com.darkbladenemo.cobblemoncharms.common.config.Config
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType
 import net.minecraft.ChatFormatting
@@ -19,6 +20,14 @@ object ClientTooltipUtils {
     }
 
     fun isTypeCharmEnabled(type: CharmType): Boolean = Config.isTypeCharmEnabled(type)
+
+    fun isTypeEffectActive(type: CharmType, effect: MultiCharmData.TypeEffect): Boolean {
+        if (!effect.enabled()) return false
+        if (!isTypeCharmEnabled(type)) return false
+        if (Config.CHARM_EFFECT_REQUIRES_ADVANCEMENT.get() &&
+            !hasAdvancement("type_charms/${type.translationKey}_charm")) return false
+        return true
+    }
 
     /**
      * Appends a status line to the tooltip based on config and advancement state.
