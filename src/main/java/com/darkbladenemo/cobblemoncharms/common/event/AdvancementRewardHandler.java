@@ -3,6 +3,7 @@ package com.darkbladenemo.cobblemoncharms.common.event;
 import com.darkbladenemo.cobblemoncharms.advancement.ModAdvancement;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
+import com.darkbladenemo.cobblemoncharms.utils.ItemGiveUtils;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,9 +56,6 @@ public class AdvancementRewardHandler {
     }
 
     private static void giveItem(ServerPlayer player, ItemStack stack, String messageKey) {
-        if (!player.getInventory().add(stack)) {
-            player.drop(stack, false);
-        }
-        player.sendSystemMessage(Component.translatable(messageKey));
+        ItemGiveUtils.giveOrDrop(player, stack, messageKey);
     }
 }

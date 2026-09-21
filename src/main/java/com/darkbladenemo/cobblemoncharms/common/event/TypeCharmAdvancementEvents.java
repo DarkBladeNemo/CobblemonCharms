@@ -13,6 +13,7 @@ import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.common.tracking.TypeCharmProgressTracker;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.utils.AdvancementUtils;
+import com.darkbladenemo.cobblemoncharms.utils.ItemGiveUtils;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -53,36 +54,12 @@ public class TypeCharmAdvancementEvents {
 
     public static void checkAllTypeCharmsForPlayer(ServerPlayer player) {
         if (!Config.ENABLE_ALL_TYPE_CHARMS.get()) return;
-
         var server = player.server;
         if (server == null) return;
 
         double threshold = Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get();
-
         for (CharmType type : CharmType.getEntries()) {
-            if (!Config.isTypeCharmEnabled(type)) continue;
-
-            int required = TypeCharmProgressTracker.computeThreshold(type, threshold);
-            int current  = TypeCharmProgressTracker.getUniqueCount(player, type);
-            if (current < required) continue;
-
-            AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(server, type);
-            if (advancement == null) continue;
-
-            boolean granted = AdvancementUtils.grantAdvancement(player, advancement);
-            if (!granted) continue;
-            if (!Config.isTypeCharmGrantedOnAdvancement(type)) continue;
-
-            var charmHolder = ModItems.TYPE_CHARMS.get(type);
-            if (charmHolder == null) continue;
-
-            ItemStack charm = new ItemStack(charmHolder.get());
-            if (!player.getInventory().add(charm)) player.drop(charm, false);
-
-            player.sendSystemMessage(Component.translatable(
-                    "message.cobblemoncharms.type_charm_awarded",
-                    Component.translatable("cobblemon.type." + type.getTranslationKey())
-            ));
+            tryGrantTypeCharm(player, server, type, threshold);
         }
     }
 
@@ -104,37 +81,37 @@ public class TypeCharmAdvancementEvents {
         if (!anyNew) return;
 
         double threshold = Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get();
-
         for (CharmType type : getTypesForForm(pokemon, formRecord)) {
-            if (!Config.isTypeCharmEnabled(type)) continue;
-
-            int required = TypeCharmProgressTracker.computeThreshold(type, threshold);
-            int current = TypeCharmProgressTracker.getUniqueCount(player, type);
-            if (current < required) continue;
-
-            AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(server, type);
-            if (advancement == null) continue;
-
-            boolean granted = AdvancementUtils.grantAdvancement(player, advancement);
-            if (!granted) continue;
-
-            if (!Config.isTypeCharmGrantedOnAdvancement(type)) continue;
-
-            var charmHolder = ModItems.TYPE_CHARMS.get(type);
-            if (charmHolder == null) continue;
-
-            ItemStack charm = new ItemStack(charmHolder.get());
-            if (!player.getInventory().add(charm)) {
-                player.drop(charm, false);
-            }
-
-            player.sendSystemMessage(
-                    Component.translatable(
-                            "message.cobblemoncharms.type_charm_awarded",
-                            Component.translatable("cobblemon.type." + type.getTranslationKey())
-                    )
-            );
+            tryGrantTypeCharm(player, server, type, threshold);
         }
+    }
+
+    /**
+     * Checks progress for a single type and grants the advancement + item reward
+     * if the player has met the threshold. No-op if the charm type is disabled,
+     * the threshold isn't met yet, or the advancement was already earned.
+     */
+    private static void tryGrantTypeCharm(ServerPlayer player, net.minecraft.server.MinecraftServer server,
+                                          CharmType type, double threshold) {
+        if (!Config.isTypeCharmEnabled(type)) return;
+
+        int required = TypeCharmProgressTracker.computeThreshold(type, threshold);
+        int current = TypeCharmProgressTracker.getUniqueCount(player, type);
+        if (current < required) return;
+
+        AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(server, type);
+        if (advancement == null) return;
+
+        boolean granted = AdvancementUtils.grantAdvancement(player, advancement);
+        if (!granted) return;
+        if (!Config.isTypeCharmGrantedOnAdvancement(type)) return;
+
+        var charmHolder = ModItems.TYPE_CHARMS.get(type);
+        if (charmHolder == null) return;
+
+        ItemGiveUtils.giveOrDrop(player, new ItemStack(charmHolder.get()),
+                "message.cobblemoncharms.type_charm_awarded",
+                Component.translatable("cobblemon.type." + type.getTranslationKey()));
     }
 
     private static List<CharmType> getTypesForForm(Pokemon pokemon, FormDexRecord formRecord) {
@@ -149,7 +126,6 @@ public class TypeCharmAdvancementEvents {
             CharmType ct = CharmType.fromElementalType(secondary);
             if (ct != null) types.add(ct);
         }
-
         return types;
     }
 }
