@@ -6,6 +6,7 @@ import com.cobblemon.mod.common.api.pokemon.stats.Stat
 import com.cobblemon.mod.common.api.pokemon.stats.Stats
 import com.cobblemon.mod.common.item.CobblemonItem
 import com.cobblemon.mod.common.pokemon.Pokemon
+import com.darkbladenemo.cobblemoncharms.common.util.StatDisplayUtils
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
@@ -77,15 +78,7 @@ class EVBoostItem(
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag)
 
         val evAmount = getEVAmount(stack)
-        val statName = when (targetStat) {
-            Stats.HP             -> "HP"
-            Stats.ATTACK         -> "Attack"
-            Stats.DEFENCE        -> "Defence"
-            Stats.SPECIAL_ATTACK -> "Sp. Atk"
-            Stats.SPECIAL_DEFENCE -> "Sp. Def"
-            Stats.SPEED          -> "Speed"
-            else                 -> "EV"
-        }
+        val statName = StatDisplayUtils.tooltipName(targetStat)
 
         tooltipComponents.add(
             Component.translatable("tooltip.cobblemoncharms.ev_item", statName, evAmount)

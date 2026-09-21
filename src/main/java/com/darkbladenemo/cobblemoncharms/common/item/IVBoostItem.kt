@@ -8,6 +8,7 @@ import com.cobblemon.mod.common.item.CobblemonItem
 import com.cobblemon.mod.common.pokemon.IVs
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.darkbladenemo.cobblemoncharms.common.config.Config
+import com.darkbladenemo.cobblemoncharms.common.util.StatDisplayUtils
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
@@ -101,31 +102,13 @@ class IVBoostItem(
                 )
             }
             targetStats.size > 1 -> {
-                val statList = targetStats.joinToString(", ") { stat ->
-                    when (stat) {
-                        Stats.HP             -> "HP"
-                        Stats.ATTACK         -> "Atk"
-                        Stats.DEFENCE        -> "Def"
-                        Stats.SPECIAL_ATTACK -> "SpA"
-                        Stats.SPECIAL_DEFENCE -> "SpD"
-                        Stats.SPEED          -> "Spe"
-                        else                 -> "?"
-                    }
-                }
+                val statList = targetStats.joinToString(", ") { stat -> StatDisplayUtils.shortName(stat) }
                 tooltipComponents.add(
                     Component.translatable("tooltip.cobblemoncharms.iv_item_multi", statList, ivIncreaseAmount)
                 )
             }
             else -> {
-                val statName = when (targetStats.firstOrNull()) {
-                    Stats.HP             -> "HP"
-                    Stats.ATTACK         -> "Attack"
-                    Stats.DEFENCE        -> "Defence"
-                    Stats.SPECIAL_ATTACK -> "Special Attack"
-                    Stats.SPECIAL_DEFENCE -> "Special Defence"
-                    Stats.SPEED          -> "Speed"
-                    else                 -> "IV"
-                }
+                val statName = targetStats.firstOrNull()?.let { StatDisplayUtils.fullName(it) } ?: "IV"
                 tooltipComponents.add(
                     Component.translatable("tooltip.cobblemoncharms.iv_item", statName, ivIncreaseAmount)
                 )

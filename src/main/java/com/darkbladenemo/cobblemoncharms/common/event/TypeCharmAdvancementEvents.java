@@ -4,7 +4,6 @@ import com.cobblemon.mod.common.api.Priority;
 import com.cobblemon.mod.common.api.events.CobblemonEvents;
 import com.cobblemon.mod.common.api.events.pokemon.PokedexDataChangedEvent;
 import com.cobblemon.mod.common.api.pokedex.FormDexRecord;
-import com.cobblemon.mod.common.api.pokedex.PokedexEntryProgress;
 import com.cobblemon.mod.common.pokemon.FormData;
 import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.darkbladenemo.cobblemoncharms.advancement.ModAdvancement;
@@ -13,13 +12,15 @@ import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.common.tracking.TypeCharmProgressTracker;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.utils.AdvancementUtils;
+import com.darkbladenemo.cobblemoncharms.utils.ItemGiveUtils;
+import kotlin.Unit;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import kotlin.Unit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +35,8 @@ public class TypeCharmAdvancementEvents {
     private static MinecraftServer currentServer = null;
 
     public static void register() {
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(
-                server -> currentServer = server
-        );
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPED.register(
-                server -> currentServer = null
-        );
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> currentServer = server);
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> currentServer = null);
 
         CobblemonEvents.POKEDEX_DATA_CHANGED_POST.subscribe(Priority.NORMAL, event -> {
             handlePokedexChanged(event);
@@ -64,27 +61,7 @@ public class TypeCharmAdvancementEvents {
         double threshold = Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get();
 
         for (CharmType type : CharmType.getEntries()) {
-            if (!Config.isTypeCharmEnabled(type)) continue;
-
-            int required = TypeCharmProgressTracker.computeThreshold(type, threshold);
-            int current  = TypeCharmProgressTracker.getUniqueCount(player, type);
-            if (current < required) continue;
-
-            AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(currentServer, type);
-            if (advancement == null) continue;
-
-            boolean granted = AdvancementUtils.grantAdvancement(player, advancement);
-            if (!granted) continue;
-
-            if (!Config.isTypeCharmGrantedOnAdvancement(type)) continue;
-
-            ItemStack charm = new ItemStack(ModItems.TYPE_CHARMS.get(type));
-            if (!player.getInventory().add(charm)) player.drop(charm, false);
-
-            player.sendSystemMessage(Component.translatable(
-                    "message.cobblemoncharms.type_charm_awarded",
-                    Component.translatable("cobblemon.type." + type.getTranslationKey())
-            ));
+            tryGrantTypeCharm(player, currentServer, type, threshold);
         }
     }
 
@@ -106,28 +83,34 @@ public class TypeCharmAdvancementEvents {
         double threshold = Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get();
 
         for (CharmType type : getTypesForForm(pokemon, formRecord)) {
-            if (!Config.isTypeCharmEnabled(type)) continue;
-
-            int required = TypeCharmProgressTracker.computeThreshold(type, threshold);
-            int current  = TypeCharmProgressTracker.getUniqueCount(player, type);
-            if (current < required) continue;
-
-            AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(currentServer, type);
-            if (advancement == null) continue;
-
-            boolean granted = AdvancementUtils.grantAdvancement(player, advancement);
-            if (!granted) continue;
-
-            if (!Config.isTypeCharmGrantedOnAdvancement(type)) continue;
-
-            ItemStack charm = new ItemStack(ModItems.TYPE_CHARMS.get(type));
-            if (!player.getInventory().add(charm)) player.drop(charm, false);
-
-            player.sendSystemMessage(Component.translatable(
-                    "message.cobblemoncharms.type_charm_awarded",
-                    Component.translatable("cobblemon.type." + type.getTranslationKey())
-            ));
+            tryGrantTypeCharm(player, currentServer, type, threshold);
         }
+    }
+
+    /**
+     * Checks progress for a single type and grants the advancement + item reward
+     * if the player has met the threshold. No-op if the charm type is disabled,
+     * the threshold isn't met yet, or the advancement was already earned.
+     */
+    private static void tryGrantTypeCharm(ServerPlayer player, MinecraftServer server,
+                                          CharmType type, double threshold) {
+        if (!Config.isTypeCharmEnabled(type)) return;
+
+        int required = TypeCharmProgressTracker.computeThreshold(type, threshold);
+        int current = TypeCharmProgressTracker.getUniqueCount(player, type);
+        if (current < required) return;
+
+        AdvancementHolder advancement = ModAdvancement.getTypeCharmAdvancement(server, type);
+        if (advancement == null) return;
+
+        boolean granted = AdvancementUtils.grantAdvancement(player, advancement);
+        if (!granted) return;
+        if (!Config.isTypeCharmGrantedOnAdvancement(type)) return;
+
+        ItemStack charm = new ItemStack(ModItems.TYPE_CHARMS.get(type));
+        ItemGiveUtils.giveOrDrop(player, charm,
+                "message.cobblemoncharms.type_charm_awarded",
+                Component.translatable("cobblemon.type." + type.getTranslationKey()));
     }
 
     private static List<CharmType> getTypesForForm(Pokemon pokemon, FormDexRecord formRecord) {

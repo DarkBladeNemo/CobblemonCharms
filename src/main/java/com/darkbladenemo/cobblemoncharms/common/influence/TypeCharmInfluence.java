@@ -149,33 +149,6 @@ public class TypeCharmInfluence implements SpawningInfluence {
         return multipliers;
     }
 
-    private void processStack(ItemStack stack, Map<CharmType, Float> multipliers) {
-        if (stack.getItem() instanceof TypeCharm) {
-            TypeCharmData data = stack.get(ModDataComponents.TYPE_CHARM_DATA);
-            if (data == null) {
-                ModItems.TYPE_CHARMS.forEach((type, charm) -> {
-                    if (stack.is(charm) && isTypeEffectAllowed(type)) {
-                        addMultiplier(multipliers, type,
-                                (float) Config.TYPE_CHARM_MATCH_MULTIPLIER.get());
-                    }
-                });
-            } else {
-                if (isTypeEffectAllowed(data.type())) {
-                    addMultiplier(multipliers, data.type(), data.matchMultiplier());
-                }
-            }
-        } else if (stack.is(ModItems.MULTI_CHARM)) {
-            MultiCharmData multiData = stack.get(ModDataComponents.MULTI_CHARM_DATA);
-            if (multiData != null) {
-                multiData.getEnabledEffects().forEach((type, effect) -> {
-                    if (isTypeEffectAllowed(type)) {
-                        addMultiplier(multipliers, type, effect.matchMultiplier());
-                    }
-                });
-            }
-        }
-    }
-
     private void addMultiplier(Map<CharmType, Float> multipliers, CharmType type, float multiplier) {
         multipliers.merge(type, multiplier, (existing, newVal) ->
                 1.0f + ((existing - 1.0f) + (newVal - 1.0f))

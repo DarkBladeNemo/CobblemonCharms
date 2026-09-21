@@ -7,6 +7,7 @@ import com.darkbladenemo.cobblemoncharms.common.event.AdvancementRewardHandler;
 import com.darkbladenemo.cobblemoncharms.common.event.TypeCharmAdvancementEvents;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.utils.AdvancementUtils;
+import com.darkbladenemo.cobblemoncharms.utils.ItemGiveUtils;
 import com.darkbladenemo.cobblemoncharms.utils.PokedexRegionUtils;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.chat.Component;
@@ -75,19 +76,11 @@ public class HandleAdvancement {
     private static void giveShinyCharm(ServerPlayer player, double threshold) {
         ItemStack charm = new ItemStack(ModItems.SHINY_CHARM);
 
-        if (!player.getInventory().add(charm)) {
-            player.drop(charm, false);
-        }
-
         if (threshold >= 100.0) {
-            player.sendSystemMessage(
-                    Component.translatable("message.cobblemoncharms.shiny_charm_awarded_full")
-            );
+            ItemGiveUtils.giveOrDrop(player, charm, "message.cobblemoncharms.shiny_charm_awarded_full");
         } else {
-            player.sendSystemMessage(
-                    Component.translatable("message.cobblemoncharms.shiny_charm_awarded_threshold",
-                            String.format("%.0f", threshold))
-            );
+            ItemGiveUtils.giveOrDrop(player, charm, "message.cobblemoncharms.shiny_charm_awarded_threshold",
+                    String.format("%.0f", threshold));
         }
     }
 }
