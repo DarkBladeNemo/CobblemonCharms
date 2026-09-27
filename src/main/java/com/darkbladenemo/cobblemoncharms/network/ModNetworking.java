@@ -106,7 +106,13 @@ public class ModNetworking {
                                 payload.typeCharmMatchMultiplier(),
                                 payload.typeCharmNonMatchMultiplier(),
                                 payload.typeCharmRadius(),
-                                payload.typeCharmThresholdPercentage()
+                                payload.typeCharmThresholdPercentage(),
+                                payload.enableAllTypeCharms(),
+                                payload.typeCharmEnabledMask(),
+                                payload.enableShinyCharm(),
+                                payload.enableExpCharm(),
+                                payload.enableCatchCharm(),
+                                payload.enableMultiCharm()
                         )
                 )
         );
@@ -122,7 +128,13 @@ public class ModNetworking {
                 Config.TYPE_CHARM_MATCH_MULTIPLIER.get().floatValue(),
                 Config.TYPE_CHARM_NON_MATCH_MULTIPLIER.get().floatValue(),
                 Config.TYPE_CHARM_RADIUS.get(),
-                Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get()
+                Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get(),
+                Config.ENABLE_ALL_TYPE_CHARMS.get(),
+                Config.buildTypeCharmEnabledMask(),
+                Config.ENABLE_SHINY_CHARM.get(),
+                Config.ENABLE_EXP_CHARM.get(),
+                Config.ENABLE_CATCH_CHARM.get(),
+                Config.ENABLE_MULTI_CHARM.get()
         );
     }
 

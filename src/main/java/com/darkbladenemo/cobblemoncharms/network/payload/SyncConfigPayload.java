@@ -20,7 +20,13 @@ public record SyncConfigPayload(
         float typeCharmMatchMultiplier,
         float typeCharmNonMatchMultiplier,
         double typeCharmRadius,
-        double typeCharmThresholdPercentage
+        double typeCharmThresholdPercentage,
+        boolean enableAllTypeCharms,
+        int typeCharmEnabledMask,
+        boolean enableShinyCharm,
+        boolean enableExpCharm,
+        boolean enableCatchCharm,
+        boolean enableMultiCharm
 ) implements CustomPacketPayload {
 
     public static final Type<SyncConfigPayload> TYPE =
@@ -38,6 +44,12 @@ public record SyncConfigPayload(
                         buf.writeFloat(payload.typeCharmNonMatchMultiplier());
                         buf.writeDouble(payload.typeCharmRadius());
                         buf.writeDouble(payload.typeCharmThresholdPercentage());
+                        buf.writeBoolean(payload.enableAllTypeCharms());
+                        buf.writeInt(payload.typeCharmEnabledMask());
+                        buf.writeBoolean(payload.enableShinyCharm());
+                        buf.writeBoolean(payload.enableExpCharm());
+                        buf.writeBoolean(payload.enableCatchCharm());
+                        buf.writeBoolean(payload.enableMultiCharm());
                     },
                     buf -> new SyncConfigPayload(
                             buf.readBoolean(),
@@ -48,7 +60,13 @@ public record SyncConfigPayload(
                             buf.readFloat(),
                             buf.readFloat(),
                             buf.readDouble(),
-                            buf.readDouble()
+                            buf.readDouble(),
+                            buf.readBoolean(),
+                            buf.readInt(),
+                            buf.readBoolean(),
+                            buf.readBoolean(),
+                            buf.readBoolean(),
+                            buf.readBoolean()
                     )
             );
 
