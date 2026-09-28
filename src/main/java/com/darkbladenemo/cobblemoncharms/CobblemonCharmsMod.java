@@ -2,9 +2,11 @@ package com.darkbladenemo.cobblemoncharms;
 
 import com.cobblemon.mod.common.api.spawning.spawner.FishingSpawnerFactory;
 import com.cobblemon.mod.common.api.spawning.spawner.PlayerSpawnerFactory;
+import com.cobblemon.mod.common.api.spawning.spawner.PokeSnackSpawnerFactory;
 import com.darkbladenemo.cobblemoncharms.command.CCharmsCommand;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.event.*;
+import com.darkbladenemo.cobblemoncharms.common.influence.PokeSnackTypeCharmInfluence;
 import com.darkbladenemo.cobblemoncharms.common.influence.ShinyCharmInfluence;
 import com.darkbladenemo.cobblemoncharms.common.influence.TypeCharmInfluence;
 import com.darkbladenemo.cobblemoncharms.init.ModConditions;
@@ -67,6 +69,9 @@ public class CobblemonCharmsMod {
         PlayerSpawnerFactory.INSTANCE.getInfluenceBuilders().add(ShinyCharmInfluence::new);
         FishingSpawnerFactory.INSTANCE.getPositionInfluenceBuilders().add(ctx ->
                 List.of(new TypeCharmInfluence(ctx.getPlayer()))
+        );
+        PokeSnackSpawnerFactory.INSTANCE.getInfluenceBuilders().add(ctx ->
+                new PokeSnackTypeCharmInfluence()
         );
 
         // Register a creative tab addition
