@@ -247,6 +247,25 @@ public class Config {
         return value == null || value.get();
     }
 
+    public static int buildTypeCharmEnabledMask() {
+        int mask = 0;
+        for (CharmType type : CharmType.getEntries()) {
+            BooleanValue value = TYPE_CHARM_CONFIG_MAP.get(type);
+            boolean enabled = value == null || value.get();
+            if (enabled) mask |= (1 << type.ordinal());
+        }
+        return mask;
+    }
+
+    public static void applyTypeCharmEnabledMask(int mask) {
+        for (CharmType type : CharmType.getEntries()) {
+            BooleanValue value = TYPE_CHARM_CONFIG_MAP.get(type);
+            if (value != null) {
+                value.set((mask & (1 << type.ordinal())) != 0);
+            }
+        }
+    }
+
     /**
      * Called client-side when a SyncConfigPayload is received from the server.
      * Overwrites in-memory values with server values so tooltips reflect server config.
@@ -260,7 +279,13 @@ public class Config {
             float typeCharmMatchMultiplier,
             float typeCharmNonMatchMultiplier,
             double typeCharmRadius,
-            double typeCharmThresholdPercentage
+            double typeCharmThresholdPercentage,
+            boolean enableAllTypeCharms,
+            int typeCharmEnabledMask,
+            boolean enableShinyCharm,
+            boolean enableExpCharm,
+            boolean enableCatchCharm,
+            boolean enableMultiCharm
     ) {
         CHARM_EFFECT_REQUIRES_ADVANCEMENT.set(charmEffectRequiresAdvancement);
         GRANT_CHARM_ON_ADVANCEMENT.set(grantCharmOnAdvancement);
@@ -271,6 +296,13 @@ public class Config {
         TYPE_CHARM_NON_MATCH_MULTIPLIER.set(typeCharmNonMatchMultiplier);
         TYPE_CHARM_RADIUS.set(typeCharmRadius);
         TYPE_CHARM_THRESHOLD_PERCENTAGE.set(typeCharmThresholdPercentage);
+
+        ENABLE_ALL_TYPE_CHARMS.set(enableAllTypeCharms);
+        applyTypeCharmEnabledMask(typeCharmEnabledMask);
+        ENABLE_SHINY_CHARM.set(enableShinyCharm);
+        ENABLE_EXP_CHARM.set(enableExpCharm);
+        ENABLE_CATCH_CHARM.set(enableCatchCharm);
+        ENABLE_MULTI_CHARM.set(enableMultiCharm);
     }
 
     // Init / Load / Save

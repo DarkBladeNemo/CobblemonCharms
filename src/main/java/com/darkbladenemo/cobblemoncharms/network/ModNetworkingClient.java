@@ -46,7 +46,13 @@ public class ModNetworkingClient {
                                 payload.typeCharmMatchMultiplier(),
                                 payload.typeCharmNonMatchMultiplier(),
                                 payload.typeCharmRadius(),
-                                payload.typeCharmThresholdPercentage()
+                                payload.typeCharmThresholdPercentage(),
+                                payload.enableAllTypeCharms(),
+                                payload.typeCharmEnabledMask(),
+                                payload.enableShinyCharm(),
+                                payload.enableExpCharm(),
+                                payload.enableCatchCharm(),
+                                payload.enableMultiCharm()
                         )
                 ));
     }

@@ -12,6 +12,7 @@ import com.darkbladenemo.cobblemoncharms.common.component.TypeCharmData;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.TypeCharm;
+import com.darkbladenemo.cobblemoncharms.common.util.CharmStackingUtils;
 import com.darkbladenemo.cobblemoncharms.common.util.CobblemonCharmsUtils;
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
@@ -150,9 +151,7 @@ public class TypeCharmInfluence implements SpawningInfluence {
     }
 
     private void addMultiplier(Map<CharmType, Float> multipliers, CharmType type, float multiplier) {
-        multipliers.merge(type, multiplier, (existing, newVal) ->
-                1.0f + ((existing - 1.0f) + (newVal - 1.0f))
-        );
+        multipliers.merge(type, multiplier, CharmStackingUtils::combine);
     }
 
     private boolean isTypeEffectAllowed(CharmType type) {

@@ -67,7 +67,7 @@ public class CharmMultiplierUtils {
 
         float totalBonus = 0.0f;
         for (SlotEntryReference entry : equipped) {
-            totalBonus += (multiplierExtractor.apply(entry.stack()) - 1.0f);
+            totalBonus += CharmStackingUtils.bonus(multiplierExtractor.apply(entry.stack()));
         }
         return 1.0f + totalBonus;
     }

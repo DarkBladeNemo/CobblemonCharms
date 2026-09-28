@@ -91,7 +91,13 @@ public class ModNetworking {
                 Config.TYPE_CHARM_MATCH_MULTIPLIER.floatValue(),
                 Config.TYPE_CHARM_NON_MATCH_MULTIPLIER.floatValue(),
                 Config.TYPE_CHARM_RADIUS.get(),
-                Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get()
+                Config.TYPE_CHARM_THRESHOLD_PERCENTAGE.get(),
+                Config.ENABLE_ALL_TYPE_CHARMS.get(),
+                Config.buildTypeCharmEnabledMask(),
+                Config.ENABLE_SHINY_CHARM.get(),
+                Config.ENABLE_EXP_CHARM.get(),
+                Config.ENABLE_CATCH_CHARM.get(),
+                Config.ENABLE_MULTI_CHARM.get()
         );
     }
 
