@@ -1,9 +1,12 @@
 package com.darkbladenemo.cobblemoncharms;
 
+import com.cobblemon.mod.common.api.spawning.spawner.FishingSpawnerFactory;
 import com.cobblemon.mod.common.api.spawning.spawner.PlayerSpawnerFactory;
+import com.cobblemon.mod.common.api.spawning.spawner.PokeSnackSpawnerFactory;
 import com.darkbladenemo.cobblemoncharms.common.command.CCharmsCommand;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.event.*;
+import com.darkbladenemo.cobblemoncharms.common.influence.PokeSnackTypeCharmInfluence;
 import com.darkbladenemo.cobblemoncharms.common.influence.ShinyCharmInfluence;
 import com.darkbladenemo.cobblemoncharms.common.influence.TypeCharmInfluence;
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents;
@@ -16,6 +19,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.world.item.CreativeModeTabs;
+
+import java.util.List;
 
 public class CobblemonCharmsFabric implements ModInitializer {
 
@@ -60,6 +65,12 @@ public class CobblemonCharmsFabric implements ModInitializer {
         // Register charm spawning influence
         PlayerSpawnerFactory.INSTANCE.getInfluenceBuilders().add(TypeCharmInfluence::new);
         PlayerSpawnerFactory.INSTANCE.getInfluenceBuilders().add(ShinyCharmInfluence::new);
+        FishingSpawnerFactory.INSTANCE.getPositionInfluenceBuilders().add(ctx ->
+                List.of(new TypeCharmInfluence(ctx.getPlayer()))
+        );
+        PokeSnackSpawnerFactory.INSTANCE.getInfluenceBuilders().add(ctx ->
+                new PokeSnackTypeCharmInfluence()
+        );
 
         // Register creative tab entries
         registerCreativeTabEntries();
