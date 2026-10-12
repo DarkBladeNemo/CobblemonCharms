@@ -2,9 +2,10 @@ package com.darkbladenemo.cobblemoncharms.common.item
 
 import com.cobblemon.mod.common.CobblemonSounds
 import com.cobblemon.mod.common.api.item.PokemonSelectingItem
+import com.cobblemon.mod.common.api.pokemon.stats.ItemEvSource
 import com.cobblemon.mod.common.api.pokemon.stats.Stat
-import com.cobblemon.mod.common.api.pokemon.stats.Stats
 import com.cobblemon.mod.common.item.CobblemonItem
+import com.cobblemon.mod.common.pokemon.EVs
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.darkbladenemo.cobblemoncharms.common.util.StatDisplayUtils
 import com.darkbladenemo.cobblemoncharms.init.ModDataComponents
@@ -15,7 +16,6 @@ import net.minecraft.sounds.SoundEvent
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
@@ -23,7 +23,7 @@ import net.minecraft.world.level.Level
 class EVBoostItem(
     private val targetStat: Stat,
     private val enabledCheck: () -> Boolean,
-    properties: Item.Properties = Item.Properties().stacksTo(64)
+    properties: Properties = Properties().stacksTo(64)
 ) : CobblemonItem(properties), PokemonSelectingItem {
 
     override val bagItem = null
@@ -36,8 +36,7 @@ class EVBoostItem(
 
     override fun canUseOnPokemon(stack: ItemStack, pokemon: Pokemon): Boolean {
         if (!enabledCheck()) return false
-        val currentEV = pokemon.evs.getOrDefault(targetStat)
-        return currentEV < 252
+        return pokemon.evs.getOrDefault(targetStat) < EVs.MAX_STAT_VALUE
     }
 
     override fun applyToPokemon(
@@ -47,13 +46,9 @@ class EVBoostItem(
     ): InteractionResultHolder<ItemStack> {
         if (!enabledCheck()) return InteractionResultHolder.fail(stack)
 
-        val evAmount = getEVAmount(stack)
-        val evStore = pokemon.evs
-        val currentEV = evStore.getOrDefault(targetStat)
-        val newEV = (currentEV + evAmount).coerceAtMost(252)
+        val gained = pokemon.evs.add(targetStat, getEVAmount(stack), ItemEvSource(player, stack, pokemon))
 
-        if (newEV != currentEV) {
-            evStore[targetStat] = newEV
+        if (gained > 0) {
             stack.consume(1, player)
             pokemon.entity?.playSound(sound, 1F, 1F)
             return InteractionResultHolder.success(stack)
@@ -71,7 +66,7 @@ class EVBoostItem(
 
     override fun appendHoverText(
         stack: ItemStack,
-        context: Item.TooltipContext,
+        context: TooltipContext,
         tooltipComponents: MutableList<Component>,
         tooltipFlag: TooltipFlag
     ) {
