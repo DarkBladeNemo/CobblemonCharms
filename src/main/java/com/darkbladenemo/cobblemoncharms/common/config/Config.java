@@ -33,6 +33,8 @@ public class Config {
     public static final ModConfigSpec.BooleanValue ENABLE_EXP_CHARM;
     public static final ModConfigSpec.BooleanValue GRANT_EXP_CHARM_ON_ADVANCEMENT;
     public static final ModConfigSpec.DoubleValue EXP_CHARM_MULTIPLIER;
+    public static final ModConfigSpec.IntValue EXP_CHARM_REQUIRED_LEVEL;
+    public static final ModConfigSpec.BooleanValue EXP_CHARM_AFFECTS_ALL_SOURCES;
 
     // Catch Charm
     public static final ModConfigSpec.BooleanValue ENABLE_CATCH_CHARM;
@@ -219,6 +221,13 @@ public class Config {
         EXP_CHARM_MULTIPLIER = BUILDER
                 .comment("Experience multiplier when EXP Charm is equipped (default: 1.5 = 50% more EXP)")
                 .defineInRange("exp_charm_multiplier", 1.5, 1.0, 10.0);
+        EXP_CHARM_REQUIRED_LEVEL = BUILDER
+                .comment("Pokémon level required to earn the EXP Charm (default: 100)")
+                .defineInRange("exp_charm_required_level", 100, 1, 100);
+        EXP_CHARM_AFFECTS_ALL_SOURCES = BUILDER
+                .comment("If false, the EXP Charm only boosts battle experience.",
+                        "If true, it also boosts rare candies, commands and other mods' experience sources.")
+                .define("exp_charm_affects_all_sources", false);
         BUILDER.pop();
 
         BUILDER.push("Catch Charm");
