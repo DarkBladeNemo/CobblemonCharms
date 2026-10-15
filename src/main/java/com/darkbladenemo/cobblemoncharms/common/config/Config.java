@@ -103,6 +103,10 @@ public class Config {
             bool(true, "charms", "exp_charm", "enabled");
     public static final DoubleValue  EXP_CHARM_MULTIPLIER =
             doubleVal(1.5, 1.0, 10.0, "charms", "exp_charm", "multiplier");
+    public static final IntValue EXP_CHARM_REQUIRED_LEVEL =
+            intVal(100, 1, 100, "charms", "exp_charm", "required_level");
+    public static final BooleanValue EXP_CHARM_AFFECTS_ALL_SOURCES =
+            bool(false, "charms", "exp_charm", "affects_all_sources");
     public static final BooleanValue GRANT_EXP_CHARM_ON_ADVANCEMENT =
             bool(true, "charms", "exp_charm", "grant_on_advancement");
 

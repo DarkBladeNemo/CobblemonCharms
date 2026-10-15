@@ -16,10 +16,7 @@
   },
   "criteria": {
     "level_up": {
-      "trigger": "cobblemon:level_up",
-      "conditions": {
-        "level": 100
-      }
+      "trigger": "minecraft:impossible"
     }
   }
 }
