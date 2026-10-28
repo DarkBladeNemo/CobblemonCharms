@@ -1,5 +1,7 @@
 package com.darkbladenemo.cobblemoncharms.common.command;
 
+import com.cobblemon.mod.common.Cobblemon;
+import com.cobblemon.mod.common.api.pokedex.Dexes;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.common.tracking.TypeCharmProgressTracker;
@@ -7,32 +9,47 @@ import com.darkbladenemo.cobblemoncharms.common.util.CharmMultiplierUtils;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.utils.PokedexRegionUtils;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
+import java.util.Locale;
+
 public class CCharmsCommand {
+
+    private static final String DEFAULT_REGION = "national";
+
+    private static final SuggestionProvider<CommandSourceStack> REGION_SUGGESTIONS =
+            (ctx, builder) -> SharedSuggestionProvider.suggest(
+                    Dexes.INSTANCE.getDexEntryMap().keySet().stream()
+                            .filter(id -> id.getNamespace().equals("cobblemon"))
+                            .map(ResourceLocation::getPath),
+                    builder);
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("ccharms")
                         .then(Commands.literal("dex")
-                                .executes(CCharmsCommand::dex)
-                        )
+                                .executes(ctx -> dex(ctx, DEFAULT_REGION))
+                                .then(Commands.argument("region", StringArgumentType.word())
+                                        .suggests(REGION_SUGGESTIONS)
+                                        .executes(ctx -> dex(ctx,
+                                                StringArgumentType.getString(ctx, "region")))))
                         .then(Commands.literal("type")
-                                .executes(CCharmsCommand::type)
-                        )
+                                .executes(CCharmsCommand::type))
                         .then(Commands.literal("debug")
                                 .then(Commands.literal("shiny")
-                                        .executes(CCharmsCommand::debugShiny)
-                                )
-                        )
+                                        .executes(CCharmsCommand::debugShiny)))
         );
     }
 
-    private static int dex(CommandContext<CommandSourceStack> ctx) {
+    private static int dex(CommandContext<CommandSourceStack> ctx, String regionArg) {
         ServerPlayer player;
         try {
             player = ctx.getSource().getPlayerOrException();
@@ -41,46 +58,52 @@ public class CCharmsCommand {
             return 0;
         }
 
-        PokedexRegionUtils.RegionProgress progress =
-                PokedexRegionUtils.getRegionProgress(player, "national");
+        String region = regionArg.toLowerCase(Locale.ROOT);
+        boolean national = region.equals(DEFAULT_REGION);
 
-        player.sendSystemMessage(Component.literal("§6=== Pokédex Progress ==="));
+        PokedexRegionUtils.RegionProgress progress =
+                PokedexRegionUtils.getRegionProgress(player, region);
 
         if (progress == null) {
-            player.sendSystemMessage(Component.literal("§cCould not retrieve Pokédex progress."));
+            ctx.getSource().sendFailure(Component.literal("Unknown Pokédex region: " + region));
             return 0;
         }
 
-        double threshold = Config.SHINY_CHARM_DEX_THRESHOLD.get();
-        int needed    = (int) Math.ceil(progress.totalImplemented() * threshold / 100.0);
-        int remaining = Math.max(0, needed - progress.totalCaught());
+        String regionName = region.substring(0, 1).toUpperCase(Locale.ROOT) + region.substring(1);
+        player.sendSystemMessage(Component.literal("§6=== " + regionName + " Pokédex Progress ==="));
 
         player.sendSystemMessage(Component.literal(
-                "§7Caught: §a" + progress.totalCaught() + " §7/ §a" + progress.totalImplemented()
-        ));
+                "§7Caught: §a" + progress.totalCaught() + " §7/ §a" + progress.totalImplemented()));
         player.sendSystemMessage(Component.literal(
-                "§7Seen: §e" + progress.totalSeen()
-        ));
+                "§7Seen: §e" + progress.totalSeen()));
         player.sendSystemMessage(Component.literal(
-                "§7Completion: §a" + String.format("%.2f", progress.completionPercentage()) + "%"
-        ));
+                "§7Completion: §a" + String.format("%.2f", progress.completionPercentage()) + "%"));
         if (Config.DEX_COMPLETION_COUNTS_SEEN.get()) {
             player.sendSystemMessage(Component.literal(
-                    "§7(Seen-or-caught mode: §a" + String.format("%.2f", progress.seenOrCaughtPercentage()) + "%§7)"
-            ));
+                    "§7(Seen-or-caught mode: §a"
+                            + String.format("%.2f", progress.seenOrCaughtPercentage()) + "%§7)"));
         }
-        player.sendSystemMessage(Component.literal(""));
-        player.sendSystemMessage(Component.literal(
-                "§7Shiny Charm Threshold: §e" + String.format("%.1f", threshold)
-                        + "% §7(§a" + needed + " §7needed)"
-        ));
 
-        if (remaining == 0) {
-            player.sendSystemMessage(Component.literal("§aStatus: §2✓ Threshold reached"));
-        } else {
+        if (national) {
+            // The Shiny Charm threshold is only measured against the national dex
+            double threshold = Config.SHINY_CHARM_DEX_THRESHOLD.get();
+            int needed = (int) Math.ceil(progress.totalImplemented() * threshold / 100.0);
+            int remaining = Math.max(0, needed - progress.totalCaught());
+
+            player.sendSystemMessage(Component.literal(""));
             player.sendSystemMessage(Component.literal(
-                    "§7Status: In Progress — §c" + remaining + " §7more to go"
-            ));
+                    "§7Shiny Charm Threshold: §e" + String.format("%.1f", threshold)
+                            + "% §7(§a" + needed + " §7needed)"));
+
+            if (remaining == 0) {
+                player.sendSystemMessage(Component.literal("§aStatus: §2✓ Threshold reached"));
+            } else {
+                player.sendSystemMessage(Component.literal(
+                        "§7Status: In Progress — §c" + remaining + " §7more to go"));
+            }
+        } else if (progress.isCompleted()) {
+            player.sendSystemMessage(Component.literal(""));
+            player.sendSystemMessage(Component.literal("§aStatus: §2✓ Region complete"));
         }
 
         return 1;
@@ -140,14 +163,21 @@ public class CCharmsCommand {
         player.sendSystemMessage(Component.literal("§7Charms equipped: §e" + charmsEquipped));
         player.sendSystemMessage(Component.literal("§7Effective multiplier: §a" + multiplier + "x"));
 
+        float baseRate = Cobblemon.INSTANCE.getConfig().getShinyRate();
+
         if (multiplier <= 1.0f) {
             player.sendSystemMessage(Component.literal(
                     "§cNo active bonus — charm not equipped or advancement not earned."
             ));
-        } else {
-            int effectiveOdds = Math.round(8192 / multiplier);
+        } else if (baseRate <= 0) {
             player.sendSystemMessage(Component.literal(
-                    "§7Effective shiny rate: §a1 in " + effectiveOdds + " §8(base 1 in 8192)"
+                    "§cShiny spawns are disabled in Cobblemon's config."
+            ));
+        } else {
+            int effectiveOdds = Math.max(1, Math.round(baseRate / multiplier));
+            player.sendSystemMessage(Component.literal(
+                    "§7Effective shiny rate: §a1 in " + effectiveOdds
+                            + " §8(base 1 in " + Math.round(baseRate) + ")"
             ));
         }
 
