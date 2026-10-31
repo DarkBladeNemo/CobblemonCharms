@@ -1,18 +1,15 @@
 package com.darkbladenemo.cobblemoncharms.datagen;
 
 import com.cobblemon.mod.common.CobblemonItems;
-import com.cobblemon.mod.common.item.interactive.HyperTrainingItem;
 import com.darkbladenemo.cobblemoncharms.CobblemonCharmsMod;
 import com.darkbladenemo.cobblemoncharms.common.condition.ConfigCondition;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.conditions.AndCondition;
 import net.neoforged.neoforge.common.conditions.ICondition;
@@ -51,20 +48,6 @@ public class ModRecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes(@NotNull RecipeOutput output) {
-
-        evRecipe(output, ModItems.SUPER_CARBOS.get(),  "enable_super_carbos",  Items.SUGAR,                  CobblemonItems.CARBOS);
-        evRecipe(output, ModItems.SUPER_PROTEIN.get(), "enable_super_protein", Items.COOKED_BEEF,            CobblemonItems.PROTEIN);
-        evRecipe(output, ModItems.SUPER_HP_UP.get(),   "enable_super_hp_up",   Items.GLISTERING_MELON_SLICE, CobblemonItems.HP_UP);
-        evRecipe(output, ModItems.SUPER_IRON.get(),    "enable_super_iron",    Items.CHAIN,                  CobblemonItems.IRON);
-        evRecipe(output, ModItems.SUPER_CALCIUM.get(), "enable_super_calcium", Items.BONE_MEAL,              CobblemonItems.CALCIUM);
-        evRecipe(output, ModItems.SUPER_ZINC.get(),    "enable_super_zinc",    Items.FERMENTED_SPIDER_EYE,   CobblemonItems.ZINC);
-
-        ivRecipe(output, ModItems.SUPER_HEALTH_CANDY.get(),  "enable_super_health_candy",  Items.GLISTERING_MELON_SLICE, CobblemonItems.HEALTH_CANDY);
-        ivRecipe(output, ModItems.SUPER_MIGHTY_CANDY.get(),  "enable_super_mighty_candy",  Items.BLAZE_POWDER,           CobblemonItems.MIGHTY_CANDY);
-        ivRecipe(output, ModItems.SUPER_TOUGH_CANDY.get(),   "enable_super_tough_candy",   Items.IRON_INGOT,             CobblemonItems.TOUGH_CANDY);
-        ivRecipe(output, ModItems.SUPER_SMART_CANDY.get(),   "enable_super_smart_candy",   Items.LAPIS_LAZULI,           CobblemonItems.SMART_CANDY);
-        ivRecipe(output, ModItems.SUPER_COURAGE_CANDY.get(), "enable_super_courage_candy", Items.EMERALD,                CobblemonItems.COURAGE_CANDY);
-        ivRecipe(output, ModItems.SUPER_QUICK_CANDY.get(),   "enable_super_quick_candy",   Items.RABBIT_FOOT,            CobblemonItems.QUICK_CANDY);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GOLD_BOTTLE_CAP.get())
                 .pattern("GGG")
@@ -151,45 +134,6 @@ public class ModRecipeProvider extends RecipeProvider {
                                     new ConfigCondition("enable_" + key + "_charm")
                             ))), ResourceLocation.fromNamespaceAndPath(CobblemonCharmsMod.MOD_ID, "charms/" + key + "_charm"));
         });
-    }
-
-    private static void evRecipe(RecipeOutput output, Item result,
-                                 String configKey, Item material,
-                                 Item power) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
-                CobblemonCharmsMod.MOD_ID, "vitamins/" + BuiltInRegistries.ITEM.getKey(result).getPath());
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result)
-                .pattern("MBM")
-                .pattern("BPB")
-                .pattern("MBM")
-                .define('M', material)
-                .define('P', power)
-                .define('B', CobblemonItems.ENIGMA_BERRY)
-                .unlockedBy("has_material", InventoryChangeTrigger.TriggerInstance.hasItems(material))
-                .save(withCondition(output,
-                        new AndCondition(List.of(
-                                new ConfigCondition("enable_all_ev_items"),
-                                new ConfigCondition(configKey)
-                        ))), id);
-    }
-
-    private static void ivRecipe(RecipeOutput output, Item result,
-                                 String configKey, Item material, HyperTrainingItem candyItem) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
-                CobblemonCharmsMod.MOD_ID, "candies/" + BuiltInRegistries.ITEM.getKey(result).getPath());
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result)
-                .pattern("BMB")
-                .pattern("MNM")
-                .pattern("BMB")
-                .define('M', material)
-                .define('N', candyItem)
-                .define('B', CobblemonItems.ENIGMA_BERRY)
-                .unlockedBy("has_material", InventoryChangeTrigger.TriggerInstance.hasItems(material))
-                .save(withCondition(output,
-                        new AndCondition(List.of(
-                                new ConfigCondition("enable_all_iv_items"),
-                                new ConfigCondition(configKey)
-                        ))), id);
     }
 
     private static RecipeOutput withCondition(RecipeOutput output, ICondition condition) {
