@@ -1,7 +1,6 @@
 package com.darkbladenemo.cobblemoncharms.datagen;
 
 import com.cobblemon.mod.common.CobblemonItems;
-import com.cobblemon.mod.common.item.interactive.HyperTrainingItem;
 import com.darkbladenemo.cobblemoncharms.CobblemonCharmsFabric;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
@@ -10,7 +9,6 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -51,48 +49,16 @@ public class ModRecipeProvider extends FabricRecipeProvider {
     @Override
     public void buildRecipes(RecipeOutput output) {
 
-        // EV Items — only generate recipe if both master toggle and individual toggle are on
-        if (Config.ENABLE_ALL_EV_ITEMS.get()) {
-            if (Config.ENABLE_SUPER_CARBOS.get())
-                evRecipe(output, ModItems.SUPER_CARBOS,  Items.SUGAR,                  CobblemonItems.CARBOS);
-            if (Config.ENABLE_SUPER_PROTEIN.get())
-                evRecipe(output, ModItems.SUPER_PROTEIN, Items.COOKED_BEEF,            CobblemonItems.PROTEIN);
-            if (Config.ENABLE_SUPER_HP_UP.get())
-                evRecipe(output, ModItems.SUPER_HP_UP,   Items.GLISTERING_MELON_SLICE, CobblemonItems.HP_UP);
-            if (Config.ENABLE_SUPER_IRON.get())
-                evRecipe(output, ModItems.SUPER_IRON,    Items.CHAIN,                  CobblemonItems.IRON);
-            if (Config.ENABLE_SUPER_CALCIUM.get())
-                evRecipe(output, ModItems.SUPER_CALCIUM, Items.BONE_MEAL,              CobblemonItems.CALCIUM);
-            if (Config.ENABLE_SUPER_ZINC.get())
-                evRecipe(output, ModItems.SUPER_ZINC,    Items.FERMENTED_SPIDER_EYE,   CobblemonItems.ZINC);
-        }
-
-        // IV Items
-        if (Config.ENABLE_ALL_IV_ITEMS.get()) {
-            if (Config.ENABLE_SUPER_HEALTH_CANDY.get())
-                ivRecipe(output, ModItems.SUPER_HEALTH_CANDY,  Items.GLISTERING_MELON_SLICE, CobblemonItems.HEALTH_CANDY);
-            if (Config.ENABLE_SUPER_MIGHTY_CANDY.get())
-                ivRecipe(output, ModItems.SUPER_MIGHTY_CANDY,  Items.BLAZE_POWDER,           CobblemonItems.MIGHTY_CANDY);
-            if (Config.ENABLE_SUPER_TOUGH_CANDY.get())
-                ivRecipe(output, ModItems.SUPER_TOUGH_CANDY,   Items.IRON_INGOT,             CobblemonItems.TOUGH_CANDY);
-            if (Config.ENABLE_SUPER_SMART_CANDY.get())
-                ivRecipe(output, ModItems.SUPER_SMART_CANDY,   Items.LAPIS_LAZULI,           CobblemonItems.SMART_CANDY);
-            if (Config.ENABLE_SUPER_COURAGE_CANDY.get())
-                ivRecipe(output, ModItems.SUPER_COURAGE_CANDY, Items.EMERALD,                CobblemonItems.COURAGE_CANDY);
-            if (Config.ENABLE_SUPER_QUICK_CANDY.get())
-                ivRecipe(output, ModItems.SUPER_QUICK_CANDY,   Items.RABBIT_FOOT,            CobblemonItems.QUICK_CANDY);
-            if (Config.ENABLE_GOLD_BOTTLE_CAP.get()) {
-                ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GOLD_BOTTLE_CAP)
-                        .pattern("GGG")
-                        .pattern("GNG")
-                        .pattern("GGG")
-                        .define('G', Items.GOLD_INGOT)
-                        .define('N', Items.NETHERITE_INGOT)
-                        .unlockedBy("has_netherite",
-                                InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHERITE_INGOT))
-                        .save(output, id("candies/gold_bottle_cap"));
-            }
-        }
+        // Gold Bottle Cap
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GOLD_BOTTLE_CAP)
+                .pattern("GGG")
+                .pattern("GNG")
+                .pattern("GGG")
+                .define('G', Items.GOLD_INGOT)
+                .define('N', Items.NETHERITE_INGOT)
+                .unlockedBy("has_netherite",
+                        InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHERITE_INGOT))
+                .save(output, id("candies/gold_bottle_cap"));
 
         // Charms
         if (Config.ENABLE_SHINY_CHARM.get()) {
@@ -184,37 +150,6 @@ public class ModRecipeProvider extends FabricRecipeProvider {
                         .save(output, id("charms/" + key + "_charm"));
             });
         }
-    }
-
-    private static void evRecipe(RecipeOutput output, Item result, Item material, Item power) {
-        ResourceLocation id = id("vitamins/" +
-                BuiltInRegistries.ITEM.getKey(result).getPath());
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result)
-                .pattern("MBM")
-                .pattern("BPB")
-                .pattern("MBM")
-                .define('M', material)
-                .define('P', power)
-                .define('B', CobblemonItems.ENIGMA_BERRY)
-                .unlockedBy("has_material",
-                        InventoryChangeTrigger.TriggerInstance.hasItems(material))
-                .save(output, id);
-    }
-
-    private static void ivRecipe(RecipeOutput output, Item result,
-                                 Item material, HyperTrainingItem candyItem) {
-        ResourceLocation id = id("candies/" +
-                BuiltInRegistries.ITEM.getKey(result).getPath());
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result)
-                .pattern("BMB")
-                .pattern("MNM")
-                .pattern("BMB")
-                .define('M', material)
-                .define('N', candyItem)
-                .define('B', CobblemonItems.ENIGMA_BERRY)
-                .unlockedBy("has_material",
-                        InventoryChangeTrigger.TriggerInstance.hasItems(material))
-                .save(output, id);
     }
 
     private static ResourceLocation id(String path) {
