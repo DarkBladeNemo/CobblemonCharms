@@ -1,6 +1,8 @@
 package com.darkbladenemo.cobblemoncharms.tick;
 
+import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.api.stats.CobblemonStats;
+import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.darkbladenemo.cobblemoncharms.advancement.ModAdvancement;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.event.TypeCharmAdvancementEvents;
@@ -18,11 +20,15 @@ import net.minecraft.world.item.ItemStack;
 
 public class HandleAdvancement {
 
+    private static ResourceLocation capturedStatId = null;
+    private static boolean capturedStatUnavailable = false;
+
     public static void checkAdvancements(MinecraftServer server) {
         server.getPlayerList().getPlayers().forEach(player -> {
             grantRootAdvancement(player);
             checkShinyCharmThreshold(player);
             checkCatchCharmThreshold(player);
+            checkExpCharmThreshold(player);
             checkRegionCompletions(player);
             TypeCharmAdvancementEvents.checkAllTypeCharmsForPlayer(player);
         });
@@ -59,16 +65,43 @@ public class HandleAdvancement {
 
     private static void checkCatchCharmThreshold(ServerPlayer player) {
         if (!Config.ENABLE_CATCH_CHARM.get()) return;
+        if (capturedStatUnavailable) return;
 
-        ResourceLocation statId = CobblemonStats.getStat(CobblemonStats.CAPTURED);
-        int captured = player.getStats().getValue(Stats.CUSTOM.get(statId));
+        if (capturedStatId == null) {
+            try {
+                capturedStatId = CobblemonStats.getStat(CobblemonStats.CAPTURED);
+            } catch (NullPointerException e) {
+                capturedStatUnavailable = true;
+                return;
+            }
+        }
 
+        int captured = player.getStats().getValue(Stats.CUSTOM.get(capturedStatId));
         if (captured < Config.CATCH_CHARM_REQUIRED_CAPTURES.get()) return;
 
         AdvancementHolder catchCharmAdvancement =
                 ModAdvancement.CATCH_CHARM.getAdvancement(player.serverLevel());
 
         AdvancementUtils.grantAdvancement(player, catchCharmAdvancement);
+    }
+
+    private static void checkExpCharmThreshold(ServerPlayer player) {
+        if (!Config.ENABLE_EXP_CHARM.get()) return;
+
+        AdvancementHolder advancement = ModAdvancement.EXP_CHARM.getAdvancement(player.serverLevel());
+        if (advancement == null) return;
+        if (player.getAdvancements().getOrStartProgress(advancement).isDone()) return;
+
+        int required = Math.min(
+                Config.EXP_CHARM_REQUIRED_LEVEL.get(),
+                Cobblemon.INSTANCE.getConfig().getMaxPokemonLevel());
+
+        for (Pokemon pokemon : Cobblemon.INSTANCE.getStorage().getParty(player)) {
+            if (pokemon.getLevel() >= required) {
+                AdvancementUtils.grantAdvancement(player, advancement);
+                return;
+            }
+        }
     }
 
     private static void giveShinyCharm(ServerPlayer player, double threshold) {
