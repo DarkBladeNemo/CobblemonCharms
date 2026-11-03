@@ -48,7 +48,7 @@ public class TypeCharmProgressTracker {
 
     public static boolean record(ServerPlayer player, Pokemon pokemon, FormDexRecord formRecord) {
         FormData form = FormKeyUtils.findForm(pokemon.getSpecies(), formRecord.getFormName());
-        if (form == null) return false; // unknown form: skip rather than credit the standard form
+        if (form == null) return false;
 
         Map<CharmType, Set<String>> cache = getOrBuildPlayerCache(player);
         String key = FormKeyUtils.key(pokemon.getSpecies().resourceIdentifier.getPath(), form);
