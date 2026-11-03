@@ -67,7 +67,10 @@ class IVBoostItem(
 
                 if (newIV != effectiveIV) {
                     pokemon.hyperTrainIV(stat, newIV)
-                    anyChanged = true
+
+                    if (pokemon.ivs.getEffectiveBattleIV(stat) != effectiveIV) {
+                        anyChanged = true
+                    }
                 }
             }
         }

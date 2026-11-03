@@ -55,8 +55,10 @@ public class ShinyCharmInfluence implements SpawningInfluence {
     private void rerollHoneyLogShiny(PokemonEntity pokemonEntity) {
         float multiplier = CharmMultiplierUtils.getShinyMultiplier(player);
 
-        // Only reroll if the charm is actually equipped and active
-        if (multiplier <= 1.0f) {
+        // Cobblemon already rolled 1/base. We add an independent roll worth (m-1)/base,
+        // so the combined odds are ~m/base instead of ~(m+1)/base.
+        float extra = multiplier - 1.0f;
+        if (extra <= 0.0f) {
             return;
         }
 
@@ -65,9 +67,9 @@ public class ShinyCharmInfluence implements SpawningInfluence {
             return;
         }
 
-        int boostedChance = Math.max(1, Math.round(baseChance / multiplier));
+        int extraChance = Math.max(1, Math.round(baseChance / extra));
 
-        if (ThreadLocalRandom.current().nextInt(boostedChance) == 0) {
+        if (ThreadLocalRandom.current().nextInt(extraChance) == 0) {
             pokemonEntity.getPokemon().setShiny(true);
         }
     }
