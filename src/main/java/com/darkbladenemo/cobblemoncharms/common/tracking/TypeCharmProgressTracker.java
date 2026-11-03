@@ -12,6 +12,7 @@ import com.cobblemon.mod.common.pokemon.Pokemon;
 import com.cobblemon.mod.common.pokemon.Species;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
+import com.darkbladenemo.cobblemoncharms.common.util.FormKeyUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -45,22 +46,19 @@ public class TypeCharmProgressTracker {
         return Math.max(1, (int) Math.ceil(implemented * percentage / 100.0));
     }
 
-    /**
-     * Records a caught Pokémon from the live event, crediting each of its form's types.
-     * Returns {@code true} if any new species+form key was added to the cache.
-     */
     public static boolean record(ServerPlayer player, Pokemon pokemon, FormDexRecord formRecord) {
+        FormData form = FormKeyUtils.findForm(pokemon.getSpecies(), formRecord.getFormName());
+        if (form == null) return false; // unknown form: skip rather than credit the standard form
+
         Map<CharmType, Set<String>> cache = getOrBuildPlayerCache(player);
-        String key = pokemon.getSpecies().resourceIdentifier.getPath() + ":" + formRecord.getFormName();
+        String key = FormKeyUtils.key(pokemon.getSpecies().resourceIdentifier.getPath(), form);
         boolean anyNew = false;
 
-        FormData form = pokemon.getSpecies().getFormByName(formRecord.getFormName());
         for (CharmType type : getTypesFromForm(form)) {
             if (cache.computeIfAbsent(type, t -> new HashSet<>()).add(key)) {
                 anyNew = true;
             }
         }
-
         return anyNew;
     }
 
@@ -116,7 +114,7 @@ public class TypeCharmProgressTracker {
         FormDexRecord formRecord = speciesRecord.getFormRecord(form.getName());
         if (formRecord == null || !meetsRequiredKnowledge(formRecord.getKnowledge())) return;
 
-        String key = speciesPath + ":" + form.getName();
+        String key = FormKeyUtils.key(speciesPath, form);
         for (CharmType type : getTypesFromForm(form)) {
             result.computeIfAbsent(type, t -> new HashSet<>()).add(key);
         }
@@ -147,13 +145,13 @@ public class TypeCharmProgressTracker {
     }
 
     private static void addFormToTypes(Map<CharmType, Set<String>> map, FormData form, String speciesPath) {
-        String key = speciesPath + ":" + form.getName();
+        String key = FormKeyUtils.key(speciesPath, form);
         for (CharmType type : getTypesFromForm(form)) {
             map.computeIfAbsent(type, t -> new HashSet<>()).add(key);
         }
     }
 
-    private static List<CharmType> getTypesFromForm(FormData form) {
+    public static List<CharmType> getTypesFromForm(FormData form) {
         List<CharmType> types = new ArrayList<>();
 
         CharmType primary = CharmType.fromElementalType(form.getPrimaryType());

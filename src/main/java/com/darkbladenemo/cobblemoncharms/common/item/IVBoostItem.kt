@@ -62,9 +62,13 @@ class IVBoostItem(
             if (canChangeIV(stat, pokemon)) {
                 val effectiveIV = pokemon.ivs.getEffectiveBattleIV(stat)
                 val newIV = (effectiveIV + ivIncreaseAmount).coerceAtMost(IVs.MAX_VALUE)
+
                 if (newIV != effectiveIV) {
                     pokemon.hyperTrainIV(stat, newIV)
-                    anyChanged = true
+
+                    if (pokemon.ivs.getEffectiveBattleIV(stat) != effectiveIV) {
+                        anyChanged = true
+                    }
                 }
             }
         }

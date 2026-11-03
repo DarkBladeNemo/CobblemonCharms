@@ -10,6 +10,7 @@ import com.darkbladenemo.cobblemoncharms.advancement.ModAdvancement;
 import com.darkbladenemo.cobblemoncharms.common.config.Config;
 import com.darkbladenemo.cobblemoncharms.common.item.charm.CharmType;
 import com.darkbladenemo.cobblemoncharms.common.tracking.TypeCharmProgressTracker;
+import com.darkbladenemo.cobblemoncharms.common.util.FormKeyUtils;
 import com.darkbladenemo.cobblemoncharms.init.ModItems;
 import com.darkbladenemo.cobblemoncharms.utils.AdvancementUtils;
 import com.darkbladenemo.cobblemoncharms.utils.ItemGiveUtils;
@@ -114,18 +115,7 @@ public class TypeCharmAdvancementEvents {
     }
 
     private static List<CharmType> getTypesForForm(Pokemon pokemon, FormDexRecord formRecord) {
-        List<CharmType> types = new ArrayList<>();
-        FormData form = pokemon.getSpecies().getFormByName(formRecord.getFormName());
-
-        CharmType primary = CharmType.fromElementalType(form.getPrimaryType());
-        if (primary != null) types.add(primary);
-
-        var secondary = form.getSecondaryType();
-        if (secondary != null) {
-            CharmType ct = CharmType.fromElementalType(secondary);
-            if (ct != null) types.add(ct);
-        }
-
-        return types;
+        FormData form = FormKeyUtils.findForm(pokemon.getSpecies(), formRecord.getFormName());
+        return form == null ? List.of() : TypeCharmProgressTracker.getTypesFromForm(form);
     }
 }
